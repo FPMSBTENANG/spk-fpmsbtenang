@@ -6,9 +6,7 @@
     <title>Sistem SPK FPMSB</title>
     
     <link rel="stylesheet" href="css/style.css">
-    
     <link rel="manifest" href="manifest.json">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -23,11 +21,11 @@
             <form id="borang-login">
                 <div class="form-group">
                     <label>ID Pengguna / E-mel</label>
-                    <input type="text" id="login-username" required placeholder="Masukkan ID atau E-mel">
+                    <input type="text" id="login-username" required>
                 </div>
                 <div class="form-group">
                     <label>Kata Laluan</label>
-                    <input type="password" id="login-password" required placeholder="Masukkan Kata Laluan">
+                    <input type="password" id="login-password" required>
                 </div>
                 
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
@@ -46,11 +44,11 @@
             <form id="borang-daftar" class="skrin-sembunyi">
                 <div class="form-group">
                     <label>Nama Pengguna (Username)</label>
-                    <input type="text" id="daftar-username" required placeholder="Cth: ali_fs">
+                    <input type="text" id="daftar-username" required>
                 </div>
                 <div class="form-group">
                     <label>E-mel Rasmi</label>
-                    <input type="email" id="daftar-email" required placeholder="Cth: ali@felda.net.my">
+                    <input type="email" id="daftar-email" required>
                 </div>
                 <div class="form-group">
                     <label>Peranan (Role)</label>
@@ -112,7 +110,6 @@
             <section id="modul-utama" class="modul-aktif">
                 <h2>Dashboard Utama</h2>
                 <p>Selamat datang ke Sistem Pengurusan SPK FPMSB Tenang.</p>
-                
                 <div class="dashboard-grid">
                     <div class="dash-kad kad-biru">
                         <div class="ikon"><i class="fas fa-file-signature"></i></div>
@@ -143,15 +140,16 @@
                 <p>Sila lengkapkan maklumat SPK Induk di bawah.</p>
                 
                 <form id="borang-daftar-spk" class="borang-panjang">
+                    
                     <h3 class="tajuk-seksyen" style="margin-top:20px; color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px;">Maklumat Kontrak</h3>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>No. SPK</label>
-                            <input type="text" id="spk-no" required placeholder="Cth: SPK/2026/001">
+                            <input type="text" id="spk-no" required>
                         </div>
                         <div class="form-group">
                             <label>No. PO</label>
-                            <input type="text" id="spk-po" required placeholder="Cth: PO-998877">
+                            <input type="text" id="spk-po" required>
                         </div>
                         <div class="form-group span-2">
                             <label>Nama Kontraktor</label>
@@ -169,35 +167,15 @@
 
                     <h3 class="tajuk-seksyen" style="margin-top:20px; color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px;">Maklumat Kerja & PKT</h3>
                     <div class="form-grid">
-                        
-                        <div class="form-group span-2">
-                            <label>Jenis PKT</label>
-                            <div style="display:flex; gap:20px; margin-top:5px;">
-                                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:normal;">
-                                    <input type="radio" name="jenis_pkt" value="TUNGGAL" checked> Satu PKT Sahaja
-                                </label>
-                                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:normal;">
-                                    <input type="radio" name="jenis_pkt" value="PELBAGAI"> Pelbagai PKT
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group span-2">
-                            <label id="label-pkt">No. PKT</label>
-                            <input type="text" id="spk-pkt" required placeholder="Cth: 001">
-                            <small id="hint-pkt" class="skrin-sembunyi" style="color:var(--primary-color); font-weight:bold; display:block; margin-top:5px;">
-                                💡 Sila pisahkan setiap PKT menggunakan koma. Contoh: 001, 002, 001G, 003G
-                            </small>
-                        </div>
-
                         <div class="form-group">
                             <label>Blok</label>
                             <input type="text" id="spk-blok">
                         </div>
-                        <div class="form-group span-2">
+                        <div class="form-group">
                             <label>Jenis Kerja</label>
-                            <input type="text" id="spk-jenis" required placeholder="Cth: Meracun Lalang">
+                            <input type="text" id="spk-jenis" required>
                         </div>
+                        
                         <div class="form-group">
                             <label>Mode</label>
                             <select id="spk-mode" required style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
@@ -206,7 +184,6 @@
                                 <option value="LUMPSUM">Lump Sum</option>
                             </select>
                         </div>
-                        
                         <div class="form-group">
                             <label>Unit</label>
                             <select id="spk-unit" required style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
@@ -222,17 +199,35 @@
                             </select>
                         </div>
 
+                        <div class="form-group span-2">
+                            <label>Pilihan PKT</label>
+                            <select id="spk-jenis-pkt" required style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
+                                <option value="TUNGGAL">Satu PKT</option>
+                                <option value="PELBAGAI">Pelbagai PKT</option>
+                            </select>
+                        </div>
+
+                        <div class="span-2" style="background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                            <div id="container-baris-pkt">
+                                <div class="baris-pkt-item" style="display:grid; grid-template-columns: 2fr 2fr 2fr 2fr auto; gap:10px; align-items:end; margin-bottom:10px;">
+                                    <div class="form-group" style="margin:0;"><label>No. PKT</label><input type="text" class="input-pkt-no" required></div>
+                                    <div class="form-group" style="margin:0;"><label>Kuantiti</label><input type="number" step="0.01" class="input-pkt-kuantiti" required></div>
+                                    <div class="form-group" style="margin:0;"><label>RM/Unit</label><input type="number" step="0.01" class="input-pkt-harga" required></div>
+                                    <div class="form-group" style="margin:0;"><label>Jumlah (RM)</label><input type="number" step="0.01" class="input-pkt-jumlah" readonly style="background:#e9ecef; font-weight:bold;"></div>
+                                    <button type="button" class="btn-buang-pkt btn-danger" style="padding:12px; height:max-content; display:none;"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                            
+                            <button type="button" id="btn-tambah-pkt" class="btn-sekunder skrin-sembunyi" style="margin-top:10px; background:#28a745; color:white; width:100%;"><i class="fas fa-plus"></i> Tambah PKT Baru</button>
+                        </div>
+
                         <div class="form-group">
-                            <label>Kuantiti Keseluruhan</label>
-                            <input type="number" step="0.01" id="spk-kuantiti" required>
+                            <label>Kuantiti Keseluruhan (Auto-Kira)</label>
+                            <input type="number" step="0.01" id="spk-kuantiti-total" readonly style="background:#e9ecef; font-weight:bold; color:var(--primary-color);">
                         </div>
                         <div class="form-group">
-                            <label>Harga Seunit (RM)</label>
-                            <input type="number" step="0.01" id="spk-harga" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nilai Kontrak (RM)</label>
-                            <input type="number" step="0.01" id="spk-nilai" required>
+                            <label>Nilai Kontrak RM (Auto-Kira)</label>
+                            <input type="number" step="0.01" id="spk-nilai-total" readonly style="background:#e9ecef; font-weight:bold; color:var(--primary-color);">
                         </div>
                     </div>
 
@@ -245,20 +240,30 @@
                                 <option value="TIDAK">TIDAK</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
                             <label>Ada Wang Amanah?</label>
                             <select id="spk-amanah" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
-                                <option value="YA">YA</option>
                                 <option value="TIDAK">TIDAK</option>
+                                <option value="YA">YA</option>
                             </select>
                         </div>
+                        
+                        <div class="form-group skrin-sembunyi span-2" id="kotak-nilai-amanah">
+                            <label>Nilai Wang Amanah (RM)</label>
+                            <input type="number" step="0.01" id="spk-nilai-amanah">
+                        </div>
+
                         <div class="form-group">
-                            <label>Kekerapan (Bulan)</label>
-                            <input type="number" id="spk-freq" placeholder="Cth: 12">
+                            <label>Kekerapan</label>
+                            <input type="number" id="spk-freq">
                         </div>
                         <div class="form-group">
-                            <label>Insuran (Tarikh Luput)</label>
-                            <input type="date" id="spk-insuran">
+                            <label>Status Insuran</label>
+                            <select id="spk-insuran" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
+                                <option value="BELUM">Belum Ada</option>
+                                <option value="SUDAH">Sudah Ada</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Tarikh Mula</label>
@@ -272,37 +277,19 @@
 
                     <button type="submit" class="btn-utama" style="margin-top: 30px;">Daftar SPK Induk</button>
                 </form>
+            </section>
             
             <section id="modul-bayaran" class="modul-sembunyi">
                 <h2>Rekod Bayaran Bulanan</h2>
                 <p>Sila masukkan butiran bayaran dan kuantiti semasa untuk memotong baki SPK.</p>
-
                 <form id="borang-bayaran" class="borang-panjang">
                     <div class="form-grid">
-                        <div class="form-group span-2">
-                            <label>No. SPK Induk</label>
-                            <input type="text" id="bayaran-no-spk" required placeholder="Masukkan No. SPK yang sah">
-                        </div>
-                        <div class="form-group">
-                            <label>No. PO</label>
-                            <input type="text" id="bayaran-no-po" required placeholder="Cth: PO-998877">
-                        </div>
-                        <div class="form-group">
-                            <label>PKT</label>
-                            <input type="text" id="bayaran-pkt" required placeholder="Cth: 001">
-                        </div>
-                        <div class="form-group">
-                            <label>Kuantiti Bulan Semasa</label>
-                            <input type="number" step="0.01" id="bayaran-kuantiti" required placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label>Nilai Bulan Semasa (RM)</label>
-                            <input type="number" step="0.01" id="bayaran-nilai" required placeholder="0.00">
-                        </div>
-                        <div class="form-group span-2">
-                            <label>Wang Amanah Potongan (RM) - Jika Ada</label>
-                            <input type="number" step="0.01" id="bayaran-amanah" placeholder="0.00">
-                        </div>
+                        <div class="form-group span-2"><label>No. SPK Induk</label><input type="text" id="bayaran-no-spk" required></div>
+                        <div class="form-group"><label>No. PO</label><input type="text" id="bayaran-no-po" required></div>
+                        <div class="form-group"><label>PKT</label><input type="text" id="bayaran-pkt" required></div>
+                        <div class="form-group"><label>Kuantiti Semasa</label><input type="number" step="0.01" id="bayaran-kuantiti" required></div>
+                        <div class="form-group"><label>Nilai Semasa (RM)</label><input type="number" step="0.01" id="bayaran-nilai" required></div>
+                        <div class="form-group span-2"><label>Wang Amanah Potongan (RM)</label><input type="number" step="0.01" id="bayaran-amanah"></div>
                     </div>
                     <button type="submit" class="btn-utama" style="margin-top: 20px;">Rekod Bayaran</button>
                 </form>
@@ -311,75 +298,54 @@
             <section id="modul-mohon-vo" class="modul-sembunyi">
                 <h2>Mohon Variation Order (VO)</h2>
                 <p>Borang permohonan tambahan kuantiti atau nilai kontrak oleh Field Supervisor (FS).</p>
-                
                 <form id="borang-mohon-vo" class="borang-panjang">
                     <div class="form-grid">
-                        <div class="form-group span-2">
-                            <label>No. SPK Induk</label>
-                            <input type="text" id="vo-no-spk" required placeholder="Cth: SPK/2026/001">
-                        </div>
-                        <div class="form-group">
-                            <label>No. PO</label>
-                            <input type="text" id="vo-no-po" required>
-                        </div>
-                        <div class="form-group">
-                            <label>PKT</label>
-                            <input type="text" id="vo-pkt" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nilai Kontrak Semasa (RM)</label>
-                            <input type="number" step="0.01" id="vo-nilai-semasa" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Kuantiti Tambahan Dipohon</label>
-                            <input type="number" step="0.01" id="vo-kuantiti-mohon" required>
-                        </div>
-                        <div class="form-group span-2">
-                            <label>Nilai Tambahan Dipohon (RM)</label>
-                            <input type="number" step="0.01" id="vo-nilai-mohon" required>
-                        </div>
+                        <div class="form-group span-2"><label>No. SPK Induk</label><input type="text" id="vo-no-spk" required></div>
+                        <div class="form-group"><label>No. PO</label><input type="text" id="vo-no-po" required></div>
+                        <div class="form-group"><label>PKT</label><input type="text" id="vo-pkt" required></div>
+                        <div class="form-group"><label>Nilai Kontrak Semasa</label><input type="number" step="0.01" id="vo-nilai-semasa" required></div>
+                        <div class="form-group"><label>Kuantiti Dipohon</label><input type="number" step="0.01" id="vo-kuantiti-mohon" required></div>
+                        <div class="form-group span-2"><label>Nilai Dipohon (RM)</label><input type="number" step="0.01" id="vo-nilai-mohon" required></div>
                     </div>
-                    <button type="submit" class="btn-utama" style="margin-top: 20px;">Hantar Permohonan VO</button>
+                    <button type="submit" class="btn-utama" style="margin-top: 20px;">Hantar Permohonan</button>
                 </form>
             </section>
             
             <section id="modul-kelulusan-vo" class="modul-sembunyi">
                 <h2>Kelulusan Variation Order</h2>
                 <p>Senarai permohonan VO yang memerlukan semakan dan kelulusan.</p>
-                
-                <div id="senarai-vo-container" class="senarai-kad">
-                    <p style="text-align:center; margin-top:20px;">Sedang memuat turun data...</p>
-                </div>
+                <div id="senarai-vo-container" class="senarai-kad"><p style="text-align:center;">Sedang memuat turun data...</p></div>
             </section>
 
             <section id="modul-profil" class="modul-sembunyi">
                 <h2>Kemaskini Profil</h2>
-                <form id="borang-profil">
+                <p>Sila kemas kini maklumat peribadi dan kata laluan anda di sini.</p>
+                <form id="borang-profil" class="borang-panjang">
                     <div class="form-group">
                         <label>Nama Pengguna</label>
                         <input type="text" id="profil-nama" required>
                     </div>
                     <div class="form-group">
-                        <label>E-mel</label>
+                        <label>E-mel Rasmi</label>
                         <input type="email" id="profil-emel" required>
                     </div>
                     <div class="form-group">
                         <label>Kata Laluan Baru (Kosongkan jika tak nak tukar)</label>
-                        <input type="password" id="profil-password">
+                        <input type="password" id="profil-password" placeholder="Masukkan kata laluan baru jika perlu">
                     </div>
-                    <button type="submit" class="btn-utama">Simpan Perubahan</button>
+                    <button type="submit" class="btn-utama" style="margin-top:15px;">Simpan Perubahan</button>
                 </form>
             </section>
 
             <div id="modal-tolak" class="modal-overlay skrin-sembunyi">
                 <div class="modal-content">
                     <h3>Sebab Tolakan</h3>
-                    <p>Sila nyatakan sebab permohonan VO ini ditolak untuk makluman pemohon (FS).</p>
+                    <p>Sila nyatakan sebab permohonan VO ini ditolak untuk makluman pemohon.</p>
                     <input type="hidden" id="tolak-spk-no">
-                    <textarea id="tolak-catatan" rows="4" placeholder="Contoh: Kuantiti dipohon terlalu tinggi..." required></textarea>
+                    <textarea id="tolak-catatan" rows="4" required></textarea>
                     <div class="modal-actions">
                         <button id="btn-batal-tolak" class="btn-sekunder">Batal</button>
-                        <button id="btn-sahkan-tolak" class="btn-merah">Sahkan Tolakan</button>
+                        <button id="btn-sahkan-tolak" class="btn-merah">Sahkan</button>
                     </div>
                 </div>
             </div>
@@ -396,13 +362,9 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker didaftarkan berjaya.', reg))
             .catch(err => console.log('Service Worker gagal didaftarkan:', err));
         });
       }
     </script>
 </body>
 </html>
-
-
-
