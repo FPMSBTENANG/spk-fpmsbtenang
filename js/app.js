@@ -1,5 +1,5 @@
 // Fail: js/app.js
-// Mengawal logik antaramuka (UI), log masuk, daftar, navigasi menu, dan pengurusan sesi
+// Mengawal logik antaramuka (UI), SweetAlert, navigasi menu, dan pengurusan sesi
 
 // ==========================================
 // 1. PEMBOLEH UBAH DOM (Elemen HTML)
@@ -9,12 +9,9 @@ const skrinDashboard = document.getElementById('skrin-dashboard');
 
 const borangLogin = document.getElementById('borang-login');
 const btnMasuk = document.getElementById('btn-masuk');
-const mesejLogin = document.getElementById('mesej-login');
 
-// Elemen Borang Daftar
 const borangDaftar = document.getElementById('borang-daftar');
 const btnDaftar = document.getElementById('btn-daftar');
-const mesejDaftar = document.getElementById('mesej-daftar');
 const linkDaftar = document.getElementById('link-daftar');
 const linkLogin = document.getElementById('link-login');
 const teksTukarDaftar = document.getElementById('teks-tukar-daftar');
@@ -23,6 +20,7 @@ const sidebar = document.getElementById('sidebar');
 const btnMenu = document.getElementById('btn-menu');
 const btnLogout = document.getElementById('btn-logout');
 const btnProfil = document.getElementById('btn-profil');
+const kandunganUtama = document.getElementById('kandungan-utama');
 
 const paparanNama = document.getElementById('paparan-nama');
 const paparanRole = document.getElementById('paparan-role');
@@ -55,7 +53,6 @@ if(linkDaftar && linkLogin) {
         borangLogin.classList.add('skrin-sembunyi');
         teksTukarDaftar.classList.add('skrin-sembunyi');
         borangDaftar.classList.remove('skrin-sembunyi');
-        mesejLogin.textContent = "";
     });
 
     linkLogin.addEventListener('click', (e) => {
@@ -63,7 +60,6 @@ if(linkDaftar && linkLogin) {
         borangDaftar.classList.add('skrin-sembunyi');
         borangLogin.classList.remove('skrin-sembunyi');
         teksTukarDaftar.classList.remove('skrin-sembunyi');
-        mesejDaftar.textContent = "";
     });
 }
 
@@ -76,7 +72,6 @@ if(borangDaftar) {
         
         btnDaftar.textContent = "Sedang Mendaftar...";
         btnDaftar.disabled = true;
-        mesejDaftar.textContent = "";
 
         const payload = {
             username: document.getElementById('daftar-username').value,
@@ -90,11 +85,17 @@ if(borangDaftar) {
         btnDaftar.disabled = false;
 
         if (respons && respons.status) {
-            alert(respons.message + "\nSila semak e-mel anda untuk mendapatkan kata laluan sementara.");
-            borangDaftar.reset();
-            linkLogin.click(); 
+            Swal.fire({
+                title: 'Pendaftaran Berjaya!',
+                text: respons.message + ' Sila semak e-mel anda untuk mendapatkan kata laluan sementara.',
+                icon: 'success',
+                confirmButtonColor: '#1155cc'
+            }).then(() => {
+                borangDaftar.reset();
+                linkLogin.click(); 
+            });
         } else {
-            mesejDaftar.textContent = respons ? respons.message : "Ralat sambungan pelayan.";
+            Swal.fire('Ralat Pendaftaran', respons ? respons.message : "Ralat sambungan pelayan.", 'error');
         }
     });
 }
@@ -110,7 +111,6 @@ borangLogin.addEventListener('submit', async (e) => {
     
     btnMasuk.textContent = "Sila Tunggu...";
     btnMasuk.disabled = true;
-    mesejLogin.textContent = "";
 
     const respons = await panggilAPI('login', {
         username: usernameInput,
@@ -128,16 +128,22 @@ borangLogin.addEventListener('submit', async (e) => {
         binaDashboard(userData);
         
         if (userData.requirePasswordChange) {
-            alert("Sila kemas kini kata laluan sementara anda di menu Profil dengan segera.");
-            bukaModul('profil');
+            Swal.fire({
+                title: 'Perhatian!',
+                text: 'Sila kemas kini kata laluan sementara anda di menu Profil dengan segera untuk tujuan keselamatan.',
+                icon: 'warning',
+                confirmButtonColor: '#f39c12'
+            }).then(() => {
+                bukaModul('profil');
+            });
         }
     } else {
-        mesejLogin.textContent = respons ? respons.message : "Ralat sambungan pelayan.";
+        Swal.fire('Log Masuk Gagal', respons ? respons.message : "Ralat sambungan pelayan.", 'error');
     }
 });
 
 // ==========================================
-// 6. BINA DASHBOARD BERDASARKAN PERANAN (ROLE)
+// 6. BINA DASHBOARD BERDASARKAN PERANAN
 // ==========================================
 function binaDashboard(user) {
     skrinLogin.classList.replace('skrin-aktif', 'skrin-sembunyi');
@@ -181,11 +187,11 @@ menuItems.forEach(item => {
         
         bukaModul(targetModul);
         
+        // Tutup sidebar automatik untuk pengguna mobile
         if (window.innerWidth <= 768) {
-            sidebar.classList.remove('buka');
+            sidebar.classList.remove('buka-mobile');
         }
 
-        // Kalau buka modul Kelulusan VO, refresh data
         if(targetModul === 'kelulusan-vo') {
             const userSesi = JSON.parse(localStorage.getItem('spk_user'));
             semakNotifikasi(userSesi);
@@ -210,18 +216,35 @@ btnProfil.addEventListener('click', () => {
 });
 
 // ==========================================
-// 8. TOGGLE SIDEBAR & LOGOUT
+// 8. LOGIK MENU TOGGLE (AUTO-HIDE) & LOGOUT
 // ==========================================
 btnMenu.addEventListener('click', () => {
-    sidebar.classList.toggle('buka');
+    if (window.innerWidth <= 768) {
+        // Mode Telefon
+        sidebar.classList.toggle('buka-mobile');
+    } else {
+        // Mode PC / Desktop
+        sidebar.classList.toggle('sembunyi-desktop');
+        kandunganUtama.classList.toggle('kembang-desktop');
+    }
 });
 
 btnLogout.addEventListener('click', () => {
-    const sah = confirm("Adakah anda pasti untuk log keluar?");
-    if (sah) {
-        localStorage.removeItem('spk_user');
-        window.location.reload(); 
-    }
+    Swal.fire({
+        title: 'Log Keluar?',
+        text: "Anda pasti untuk log keluar dari sistem?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Log Keluar',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('spk_user');
+            window.location.reload(); 
+        }
+    });
 });
 
 // ==========================================
@@ -255,7 +278,7 @@ if (borangProfil) {
         btnSimpan.disabled = false;
 
         if (respons && respons.status) {
-            alert("Profil berjaya dikemas kini!");
+            Swal.fire('Berjaya!', 'Profil anda telah dikemas kini.', 'success');
             userSesi.username = respons.data.username;
             userSesi.email = respons.data.email;
             localStorage.setItem('spk_user', JSON.stringify(userSesi));
@@ -263,7 +286,7 @@ if (borangProfil) {
             paparanNama.textContent = respons.data.username;
             document.getElementById('profil-password').value = ""; 
         } else {
-            alert("Ralat kemas kini: " + (respons ? respons.message : "Gagal menghubungi pelayan."));
+            Swal.fire('Ralat', respons ? respons.message : "Gagal menghubungi pelayan.", 'error');
         }
     });
 }
@@ -314,11 +337,13 @@ if (borangDaftarSPK) {
         btnDaftarSPK.disabled = false;
 
         if (respons && respons.status) {
-            alert("Berjaya! SPK baharu telah direkodkan dalam pangkalan data.");
-            borangDaftarSPK.reset(); 
-            bukaModul('utama'); 
+            Swal.fire('Pendaftaran SPK Berjaya', 'SPK baharu telah direkodkan dalam pangkalan data.', 'success')
+            .then(() => {
+                borangDaftarSPK.reset(); 
+                bukaModul('utama'); 
+            });
         } else {
-            alert("Ralat: " + (respons ? respons.message : "Gagal berhubung dengan pangkalan data."));
+            Swal.fire('Ralat', respons ? respons.message : "Gagal berhubung dengan pangkalan data.", 'error');
         }
     });
 }
@@ -355,14 +380,24 @@ if (borangBayaran) {
         btnBayar.disabled = false;
 
         if (respons && respons.status) {
-            let mesejKejayaan = "Bayaran berjaya direkodkan!\n\nBaki Kuantiti Terkini: " + respons.data.baki_terkini;
+            let mesejHtml = `<b>Bayaran berjaya direkodkan!</b><br><br>Baki Kuantiti Terkini: <b style="color:#1155cc;">${respons.data.baki_terkini}</b>`;
+            let iconPopup = 'success';
+
             if (respons.data.amaran_dihantar) {
-                mesejKejayaan += "\n\n⚠️ NOTIS: Amaran limit kuantiti telah dihantar secara automatik ke e-mel pengurusan (FC/AFC/FS).";
+                mesejHtml += `<br><br><span style="color:#dc3545;">⚠️ NOTIS: Amaran limit kuantiti telah dihantar secara automatik ke e-mel pengurusan (FC/AFC/FS).</span>`;
+                iconPopup = 'warning';
             }
-            alert(mesejKejayaan);
-            borangBayaran.reset(); 
+
+            Swal.fire({
+                title: 'Status Bayaran',
+                html: mesejHtml,
+                icon: iconPopup,
+                confirmButtonColor: '#1155cc'
+            }).then(() => {
+                borangBayaran.reset(); 
+            });
         } else {
-            alert("Ralat: " + (respons ? respons.message : "Gagal berhubung dengan pangkalan data."));
+            Swal.fire('Ralat Rekod', respons ? respons.message : "Gagal berhubung dengan pangkalan data.", 'error');
         }
     });
 }
@@ -399,11 +434,12 @@ if (borangMohonVO) {
         btnMohon.disabled = false;
 
         if (respons && respons.status) {
-            alert("Berjaya! " + respons.message);
-            borangMohonVO.reset();
-            bukaModul('utama'); 
+            Swal.fire('Permohonan Dihantar', respons.message, 'success').then(() => {
+                borangMohonVO.reset();
+                bukaModul('utama'); 
+            });
         } else {
-            alert("Ralat: " + (respons ? respons.message : "Gagal berhubung dengan pangkalan data."));
+            Swal.fire('Ralat VO', respons ? respons.message : "Gagal berhubung dengan pangkalan data.", 'error');
         }
     });
 }
@@ -423,7 +459,6 @@ async function semakNotifikasi(user) {
         const senarai = respons.data;
         const container = document.getElementById('senarai-vo-container');
         
-        // Update Loceng Notifikasi
         let jumlahTugasan = 0;
         const role = user.role.toUpperCase();
         
@@ -439,7 +474,6 @@ async function semakNotifikasi(user) {
             badgeNotifikasi.classList.add('sembunyi');
         }
 
-        // Render Kad VO
         if (container) {
             container.innerHTML = ""; 
             
@@ -500,10 +534,26 @@ window.prosesVO = async function(noSpk, tindakan, catatan = "") {
     const userSesi = JSON.parse(localStorage.getItem('spk_user'));
     
     if(tindakan === 'LULUS') {
-        const sah = confirm(`Adakah anda pasti untuk LULUSKAN permohonan SPK ${noSpk}?`);
-        if(!sah) return;
+        Swal.fire({
+            title: 'Sahkan Kelulusan',
+            text: `Adakah anda pasti untuk LULUSKAN permohonan SPK ${noSpk}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Luluskan'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                laksanakanProsesVO(noSpk, tindakan, catatan, userSesi);
+            }
+        });
+    } else {
+        // Untuk tolak, terus jalankan sebab dah confirm kat modal
+        laksanakanProsesVO(noSpk, tindakan, catatan, userSesi);
     }
-    
+};
+
+async function laksanakanProsesVO(noSpk, tindakan, catatan, userSesi) {
     const respons = await panggilAPI('updateVO', {
         no_spk: noSpk,
         role: userSesi.role.toUpperCase(),
@@ -512,13 +562,13 @@ window.prosesVO = async function(noSpk, tindakan, catatan = "") {
     });
 
     if(respons && respons.status) {
-        alert("Berjaya: " + respons.message);
+        Swal.fire('Selesai', respons.message, 'success');
         document.getElementById('modal-tolak').classList.add('skrin-sembunyi'); 
         semakNotifikasi(userSesi); 
     } else {
-        alert("Ralat: " + (respons ? respons.message : "Gagal mengemas kini pangkalan data."));
+        Swal.fire('Ralat', respons ? respons.message : "Gagal mengemas kini pangkalan data.", 'error');
     }
-};
+}
 
 // Fungsi Kawalan Modal Tolak
 window.bukaModalTolak = function(noSpk) {
@@ -536,7 +586,7 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     const catatan = document.getElementById('tolak-catatan').value;
     
     if(catatan.trim() === "") {
-        alert("Sila masukkan sebab tolakan terlebih dahulu!");
+        Swal.fire('Maklumat Tidak Lengkap', 'Sila masukkan sebab tolakan terlebih dahulu!', 'warning');
         return;
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
