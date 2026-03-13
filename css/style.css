@@ -118,7 +118,6 @@ body {
     border-color: var(--primary-color);
 }
 
-/* Grid Borang untuk form yang panjang (Daftar SPK / Mohon VO) */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -221,7 +220,6 @@ body {
     padding: 5px;
 }
 
-/* Loceng Notifikasi */
 .badge {
     position: absolute;
     top: -2px;
@@ -235,7 +233,7 @@ body {
 }
 
 /* ==========================================
-   6. SIDEBAR (MENU KIRI)
+   6. SIDEBAR (MENU KIRI) & TOGGLE LOGIC
    ========================================== */
 .sidebar {
     position: fixed;
@@ -249,6 +247,11 @@ body {
     z-index: 900;
     display: flex;
     flex-direction: column;
+}
+
+/* Kelas ini akan ditambah melalui JS bila butang menu ditekan (Untuk PC) */
+.sidebar.sembunyi-desktop {
+    transform: translateX(-100%);
 }
 
 .profil-ringkas {
@@ -316,6 +319,11 @@ body {
     transition: margin-left 0.3s ease;
 }
 
+/* Kembang kandungan bila sidebar ditutup (Untuk PC) */
+.kandungan.kembang-desktop {
+    margin-left: 0;
+}
+
 section h2 {
     color: var(--primary-color);
     margin-bottom: 10px;
@@ -331,7 +339,63 @@ section p {
 }
 
 /* ==========================================
-   8. KAD SENARAI VO & MODAL TOLAKAN
+   8. KAD DASHBOARD (HALAMAN UTAMA)
+   ========================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.dash-kad {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dash-kad:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.dash-kad .ikon {
+    font-size: 30px;
+    margin-right: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.dash-kad .info h3 {
+    margin-bottom: 5px;
+    font-size: 18px;
+    color: white;
+    border: none;
+    padding: 0;
+}
+
+.dash-kad .info p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Warna Kad */
+.kad-biru { background: linear-gradient(135deg, #1155cc, #4a86e8); }
+.kad-hijau { background: linear-gradient(135deg, #28a745, #5cd08d); }
+.kad-oren { background: linear-gradient(135deg, #f39c12, #f1c40f); }
+
+/* ==========================================
+   9. KAD SENARAI VO & MODAL TOLAKAN
    ========================================== */
 .senarai-kad {
     display: flex;
@@ -400,7 +464,6 @@ section p {
 .btn-hijau { background: var(--success); }
 .btn-merah { background: var(--danger); }
 
-/* Modal Box */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -420,27 +483,29 @@ section p {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.modal-content h3 { color: var(--danger); margin-bottom: 10px; }
+.modal-content h3 { color: var(--danger); margin-bottom: 10px; border: none; padding: 0; }
 .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
 
 /* ==========================================
-   9. RESPONSIVE UTK TELEFON BIMBIT (MOBILE)
+   10. RESPONSIVE UTK TELEFON BIMBIT (MOBILE)
    ========================================== */
 @media screen and (max-width: 768px) {
+    /* Bila di telefon, menu memang tersembunyi secara lalai */
     .sidebar {
         transform: translateX(-100%);
     }
 
-    .sidebar.buka {
+    /* Ini kelas bila butang menu ditekan di telefon */
+    .sidebar.buka-mobile {
         transform: translateX(0);
     }
 
+    /* Kandungan penuh skrin di telefon */
     .kandungan {
         margin-left: 0;
         padding: 15px;
     }
     
-    /* Ubah Grid Form jadi 1 kolum bila di skrin kecil */
     .form-grid {
         grid-template-columns: 1fr;
     }
