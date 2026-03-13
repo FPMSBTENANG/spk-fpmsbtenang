@@ -281,6 +281,7 @@ if (borangProfil) {
             Swal.fire('Berjaya!', 'Profil anda telah dikemas kini.', 'success');
             userSesi.username = respons.data.username;
             userSesi.email = respons.data.email;
+            userSesi.requirePasswordChange = false;
             localStorage.setItem('spk_user', JSON.stringify(userSesi));
             
             paparanNama.textContent = respons.data.username;
@@ -591,3 +592,4 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
 });
+
