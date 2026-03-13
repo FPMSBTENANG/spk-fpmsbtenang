@@ -4,7 +4,7 @@
 // ⚠️ AMARAN PENTING: 
 // Gantikan URL di bawah dengan URL Web App Google Apps Script kau yang sebenar!
 // Pastikan kau copy URL yang berakhir dengan /exec
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzuRX22juTCVoH67ojOrML4J-CrG5E2UGliV1EU-Mx0XBKF2hpLyy45df1_I4fcCiwL/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx_1C32ROtZx3riNqKc510i36J44zo87iEaNFPuL3iecbFjAqcUHGSFsCMffW4m0J0/exec"; 
 
 /**
  * Fungsi utama untuk menghantar arahan dan data ke Backend
@@ -33,4 +33,5 @@ async function panggilAPI(action, data) {
             message: "Gagal berhubung dengan pelayan. Sila semak sambungan internet atau URL API anda." 
         };
     }
+
 }
