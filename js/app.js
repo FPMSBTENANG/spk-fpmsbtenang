@@ -750,3 +750,37 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
 });
+
+// ==========================================
+// 15. LOGIK SISTEM TEMA (DARK / LIGHT MODE)
+// ==========================================
+const btnTema = document.getElementById('btn-tema');
+const ikonTema = btnTema ? btnTema.querySelector('i') : null;
+
+// Semak tema yang disimpan sebelum ini (atau preferensi sistem)
+const temaSimpanan = localStorage.getItem('spk_tema');
+if (temaSimpanan === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if(ikonTema) {
+        ikonTema.classList.replace('fa-moon', 'fa-sun');
+    }
+}
+
+// Logik bila butang tema ditekan
+if (btnTema) {
+    btnTema.addEventListener('click', () => {
+        const temaSemasa = document.documentElement.getAttribute('data-theme');
+        
+        if (temaSemasa === 'dark') {
+            // Tukar ke Light Mode
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('spk_tema', 'light');
+            ikonTema.classList.replace('fa-sun', 'fa-moon');
+        } else {
+            // Tukar ke Dark Mode
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('spk_tema', 'dark');
+            ikonTema.classList.replace('fa-moon', 'fa-sun');
+        }
+    });
+}
