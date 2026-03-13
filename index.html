@@ -253,9 +253,16 @@
                             <label>Nilai Wang Amanah (RM)</label>
                             <input type="number" step="0.01" id="spk-nilai-amanah">
                         </div>
+                        
                         <div class="form-group skrin-sembunyi" id="kotak-cara-bayaran">
                             <label>Cara Bayaran Amanah</label>
-                            <input type="text" id="spk-cara-bayaran" placeholder="Cth: Potongan Bulanan / EFT">
+                            <select id="spk-cara-bayaran" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
+                                <option value="" disabled selected>Pilih Cara Bayaran...</option>
+                                <option value="Potong Sijil Bayaran">Potong Sijil Bayaran</option>
+                                <option value="Bank Draf">Bank Draf</option>
+                                <option value="Bank Guarantee">Bank Guarantee</option>
+                                <option value="Pindahan">Pindahan</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
