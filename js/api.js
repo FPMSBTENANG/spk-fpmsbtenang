@@ -15,6 +15,10 @@ async function panggilAPI(action, data) {
     try {
         const respons = await fetch(GAS_URL, {
             method: 'POST',
+            redirect: 'follow', // Penting untuk GAS
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8", // Elak CORS Preflight
+            },
             body: JSON.stringify({
                 action: action,
                 payload: data
@@ -35,4 +39,5 @@ async function panggilAPI(action, data) {
     }
 
 }
+
 
