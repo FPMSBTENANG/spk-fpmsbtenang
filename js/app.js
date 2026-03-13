@@ -9,7 +9,7 @@ const skrinDashboard = document.getElementById('skrin-dashboard');
 
 const borangLogin = document.getElementById('borang-login');
 const btnMasuk = document.getElementById('btn-masuk');
-const checkboxIngat = document.getElementById('ingat-saya'); // Pemboleh ubah baru
+const checkboxIngat = document.getElementById('ingat-saya');
 
 const borangDaftar = document.getElementById('borang-daftar');
 const btnDaftar = document.getElementById('btn-daftar');
@@ -34,7 +34,6 @@ const senaraiModul = document.querySelectorAll('main > section');
 // 2. AWALAN (INITIALIZATION) PADA WAKTU LOAD
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Gunakan sessionStorage supaya automatik logout bila tutup PWA/Browser
     const sesiUser = sessionStorage.getItem('spk_user');
     
     if (sesiUser) {
@@ -44,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         skrinLogin.classList.replace('skrin-sembunyi', 'skrin-aktif');
         skrinDashboard.classList.replace('skrin-aktif', 'skrin-sembunyi');
         
-        // Semak jika ada ID pengguna yang disimpan (Logik Ingat Saya)
         const savedUsername = localStorage.getItem('spk_saved_username');
         if (savedUsername) {
             document.getElementById('login-username').value = savedUsername;
@@ -132,10 +130,8 @@ borangLogin.addEventListener('submit', async (e) => {
     if (respons && respons.status) {
         const userData = respons.data;
         
-        // Simpan sesi aktif ke sessionStorage (hilang bila app tutup)
         sessionStorage.setItem('spk_user', JSON.stringify(userData));
         
-        // Simpan atau buang ID Pengguna berdasarkan kotak 'Ingat Saya'
         if (checkboxIngat && checkboxIngat.checked) {
             localStorage.setItem('spk_saved_username', usernameInput);
         } else {
@@ -309,52 +305,145 @@ if (borangProfil) {
 }
 
 // ==========================================
-// 10. MODUL DAFTAR SPK INDUK
+// 10. MODUL DAFTAR SPK INDUK (FUNGSI BARU DINAMIK)
 // ==========================================
 const borangDaftarSPK = document.getElementById('borang-daftar-spk');
-const radioPkt = document.querySelectorAll('input[name="jenis_pkt"]');
-const hintPkt = document.getElementById('hint-pkt');
-const inputPktUI = document.getElementById('spk-pkt');
+const spkJenisPkt = document.getElementById('spk-jenis-pkt');
+const btnTambahPkt = document.getElementById('btn-tambah-pkt');
+const containerBarisPkt = document.getElementById('container-baris-pkt');
+const spkKuantitiTotal = document.getElementById('spk-kuantiti-total');
+const spkNilaiTotal = document.getElementById('spk-nilai-total');
+const spkAmanah = document.getElementById('spk-amanah');
+const kotakAmanah = document.getElementById('kotak-nilai-amanah');
 
-// Logik untuk tunjuk/sembunyi hint koma bila tukar radio button
-if (radioPkt) {
-    radioPkt.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.value === 'PELBAGAI') {
-                hintPkt.classList.remove('skrin-sembunyi');
-                inputPktUI.placeholder = "Cth: 001, 002, 003";
-            } else {
-                hintPkt.classList.add('skrin-sembunyi');
-                inputPktUI.placeholder = "Cth: 001";
-            }
-        });
+// A. Logik Buka/Tutup Kotak Wang Amanah
+if(spkAmanah) {
+    spkAmanah.addEventListener('change', (e) => {
+        if(e.target.value === 'YA') {
+            kotakAmanah.classList.remove('skrin-sembunyi');
+            document.getElementById('spk-nilai-amanah').required = true;
+        } else {
+            kotakAmanah.classList.add('skrin-sembunyi');
+            document.getElementById('spk-nilai-amanah').required = false;
+            document.getElementById('spk-nilai-amanah').value = '';
+        }
     });
 }
 
+// B. Logik Pilih Jenis PKT (Satu vs Pelbagai)
+if(spkJenisPkt) {
+    spkJenisPkt.addEventListener('change', (e) => {
+        if(e.target.value === 'PELBAGAI') {
+            btnTambahPkt.classList.remove('skrin-sembunyi');
+        } else {
+            btnTambahPkt.classList.add('skrin-sembunyi');
+            // Reset ke 1 baris
+            containerBarisPkt.innerHTML = '';
+            tambahBarisPkt(false);
+        }
+        kiraTotalSPK();
+    });
+}
+
+// C. Fungsi Tambah Baris Dinamik & Auto-Kira Baris
+function tambahBarisPkt(bolehBuang = true) {
+    const div = document.createElement('div');
+    div.className = 'baris-pkt-item';
+    div.style.cssText = 'display:grid; grid-template-columns: 2fr 2fr 2fr 2fr auto; gap:10px; align-items:end; margin-bottom:10px;';
+    
+    div.innerHTML = `
+        <div class="form-group" style="margin:0;"><label>No. PKT</label><input type="text" class="input-pkt-no" required></div>
+        <div class="form-group" style="margin:0;"><label>Kuantiti</label><input type="number" step="0.01" class="input-pkt-kuantiti" required></div>
+        <div class="form-group" style="margin:0;"><label>RM/Unit</label><input type="number" step="0.01" class="input-pkt-harga" required></div>
+        <div class="form-group" style="margin:0;"><label>Jumlah (RM)</label><input type="number" step="0.01" class="input-pkt-jumlah" readonly style="background:#e9ecef; font-weight:bold; color:var(--primary-color);"></div>
+        <button type="button" class="btn-buang-pkt btn-danger" style="padding:12px; height:max-content; border-radius:8px; ${bolehBuang ? '' : 'display:none;'}"><i class="fas fa-trash"></i></button>
+    `;
+    
+    const inKuantiti = div.querySelector('.input-pkt-kuantiti');
+    const inHarga = div.querySelector('.input-pkt-harga');
+    const btnBuang = div.querySelector('.btn-buang-pkt');
+
+    const kiraRow = () => {
+        const k = parseFloat(inKuantiti.value) || 0;
+        const h = parseFloat(inHarga.value) || 0;
+        div.querySelector('.input-pkt-jumlah').value = (k * h).toFixed(2);
+        kiraTotalSPK(); // Kemaskini Total Utama
+    };
+
+    inKuantiti.addEventListener('input', kiraRow);
+    inHarga.addEventListener('input', kiraRow);
+
+    if(bolehBuang) {
+        btnBuang.addEventListener('click', () => {
+            div.remove();
+            kiraTotalSPK(); // Kemaskini Total Utama bila dibuang
+        });
+    }
+    
+    containerBarisPkt.appendChild(div);
+}
+
+if(btnTambahPkt) {
+    btnTambahPkt.addEventListener('click', () => {
+        tambahBarisPkt(true);
+    });
+}
+
+// Ikat event auto-kira pada baris pertama (yang dah ada dlm HTML)
+function initDefaultRow() {
+    const firstRow = containerBarisPkt.querySelector('.baris-pkt-item');
+    if(firstRow) {
+        const inKuantiti = firstRow.querySelector('.input-pkt-kuantiti');
+        const inHarga = firstRow.querySelector('.input-pkt-harga');
+        const kiraRow = () => {
+            const k = parseFloat(inKuantiti.value) || 0;
+            const h = parseFloat(inHarga.value) || 0;
+            firstRow.querySelector('.input-pkt-jumlah').value = (k * h).toFixed(2);
+            kiraTotalSPK();
+        };
+        inKuantiti.addEventListener('input', kiraRow);
+        inHarga.addEventListener('input', kiraRow);
+    }
+}
+// Jalankan bila load
+setTimeout(initDefaultRow, 500); 
+
+// D. Fungsi Kira Keseluruhan (Auto-Kira Total Utama)
+function kiraTotalSPK() {
+    let totalKuantiti = 0;
+    let totalNilai = 0;
+    document.querySelectorAll('.baris-pkt-item').forEach(row => {
+        const k = parseFloat(row.querySelector('.input-pkt-kuantiti').value) || 0;
+        const j = parseFloat(row.querySelector('.input-pkt-jumlah').value) || 0;
+        totalKuantiti += k;
+        totalNilai += j;
+    });
+    if(spkKuantitiTotal) spkKuantitiTotal.value = totalKuantiti.toFixed(2);
+    if(spkNilaiTotal) spkNilaiTotal.value = totalNilai.toFixed(2);
+}
+
+// E. Proses Hantar Borang SPK
 if (borangDaftarSPK) {
     borangDaftarSPK.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const btnDaftarSPK = borangDaftarSPK.querySelector('button[type="submit"]');
-        const teksAsal = btnDaftarSPK.textContent;
-        
-        btnDaftarSPK.textContent = "Sedang Menyimpan...";
-        btnDaftarSPK.disabled = true;
+        const btnSubmit = borangDaftarSPK.querySelector('button[type="submit"]');
+        const teksAsal = btnSubmit.textContent;
+        btnSubmit.textContent = "Sedang Menyimpan...";
+        btnSubmit.disabled = true;
 
         const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
-        // LOGIK PECAH PKT (Array Parsing)
-        const jenisPkt = document.querySelector('input[name="jenis_pkt"]:checked').value;
-        const inputPktRaw = document.getElementById('spk-pkt').value;
-        let tatasusunanPkt = [];
-
-        if (jenisPkt === 'PELBAGAI') {
-            // Pecahkan teks guna koma, buang 'space' kosong, dan tapis kalau ada yang tersilap taip koma bertindih
-            tatasusunanPkt = inputPktRaw.split(',').map(item => item.trim()).filter(item => item !== "");
-        } else {
-            // Kalau tunggal, masuk je 1 array
-            tatasusunanPkt = [inputPktRaw.trim()];
-        }
+        // Bina Array Data PKT dari setiap baris
+        let dataPktArray = [];
+        document.querySelectorAll('.baris-pkt-item').forEach(row => {
+            dataPktArray.push({
+                no_pkt: row.querySelector('.input-pkt-no').value,
+                kuantiti: row.querySelector('.input-pkt-kuantiti').value,
+                harga_seunit: row.querySelector('.input-pkt-harga').value,
+                jumlah_rm: row.querySelector('.input-pkt-jumlah').value
+            });
+        });
 
         const payloadSPK = {
             no_spk: document.getElementById('spk-no').value,
@@ -363,18 +452,19 @@ if (borangDaftarSPK) {
             alamat_kontrak: document.getElementById('spk-alamat').value,
             no_vendor: document.getElementById('spk-vendor').value,
             
-            // Hantar Array ke Backend!
-            senarai_pkt: tatasusunanPkt, 
-            
             blok: document.getElementById('spk-blok').value,
             jenis_kerja: document.getElementById('spk-jenis').value,
             mode: document.getElementById('spk-mode').value,
             unit: document.getElementById('spk-unit').value,
-            kuantiti: document.getElementById('spk-kuantiti').value,
-            harga_seunit: document.getElementById('spk-harga').value,
-            nilai_kontrak: document.getElementById('spk-nilai').value,
+            
+            // Hantar Array PKT & Total Utama
+            senarai_pkt_data: dataPktArray, 
+            kuantiti_total: spkKuantitiTotal.value,
+            nilai_total: spkNilaiTotal.value,
+            
             ada_tahanan: document.getElementById('spk-tahanan').value,
             ada_amanah: document.getElementById('spk-amanah').value,
+            nilai_amanah: document.getElementById('spk-nilai-amanah').value || 0,
             insuran: document.getElementById('spk-insuran').value,
             frequency_month: document.getElementById('spk-freq').value,
             tarikh_mula: document.getElementById('spk-mula').value,
@@ -384,13 +474,20 @@ if (borangDaftarSPK) {
 
         const respons = await panggilAPI('createSPK', payloadSPK);
 
-        btnDaftarSPK.textContent = teksAsal;
-        btnDaftarSPK.disabled = false;
+        btnSubmit.textContent = teksAsal;
+        btnSubmit.disabled = false;
 
         if (respons && respons.status) {
-            Swal.fire('Pendaftaran SPK Berjaya', `SPK baharu direkodkan.<br>Sistem telah mendaftarkan <b>${tatasusunanPkt.length} PKT</b> untuk SPK ini.`, 'success')
+            Swal.fire('Pendaftaran SPK Berjaya', `Sistem telah merekodkan <b>${dataPktArray.length} PKT</b> untuk SPK ini.`, 'success')
             .then(() => {
                 borangDaftarSPK.reset(); 
+                // Reset balik ke form asal (1 row)
+                if(spkJenisPkt) spkJenisPkt.value = "TUNGGAL";
+                containerBarisPkt.innerHTML = '';
+                tambahBarisPkt(false);
+                btnTambahPkt.classList.add('skrin-sembunyi');
+                kiraTotalSPK();
+                
                 bukaModul('utama'); 
             });
         } else {
@@ -641,4 +738,3 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
 });
-
