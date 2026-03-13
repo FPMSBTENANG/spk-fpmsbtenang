@@ -312,6 +312,25 @@ if (borangProfil) {
 // 10. MODUL DAFTAR SPK INDUK
 // ==========================================
 const borangDaftarSPK = document.getElementById('borang-daftar-spk');
+const radioPkt = document.querySelectorAll('input[name="jenis_pkt"]');
+const hintPkt = document.getElementById('hint-pkt');
+const inputPktUI = document.getElementById('spk-pkt');
+
+// Logik untuk tunjuk/sembunyi hint koma bila tukar radio button
+if (radioPkt) {
+    radioPkt.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'PELBAGAI') {
+                hintPkt.classList.remove('skrin-sembunyi');
+                inputPktUI.placeholder = "Cth: 001, 002, 003";
+            } else {
+                hintPkt.classList.add('skrin-sembunyi');
+                inputPktUI.placeholder = "Cth: 001";
+            }
+        });
+    });
+}
+
 if (borangDaftarSPK) {
     borangDaftarSPK.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -324,13 +343,29 @@ if (borangDaftarSPK) {
 
         const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
+        // LOGIK PECAH PKT (Array Parsing)
+        const jenisPkt = document.querySelector('input[name="jenis_pkt"]:checked').value;
+        const inputPktRaw = document.getElementById('spk-pkt').value;
+        let tatasusunanPkt = [];
+
+        if (jenisPkt === 'PELBAGAI') {
+            // Pecahkan teks guna koma, buang 'space' kosong, dan tapis kalau ada yang tersilap taip koma bertindih
+            tatasusunanPkt = inputPktRaw.split(',').map(item => item.trim()).filter(item => item !== "");
+        } else {
+            // Kalau tunggal, masuk je 1 array
+            tatasusunanPkt = [inputPktRaw.trim()];
+        }
+
         const payloadSPK = {
             no_spk: document.getElementById('spk-no').value,
             no_po: document.getElementById('spk-po').value,
             nama_kontrak: document.getElementById('spk-nama').value,
             alamat_kontrak: document.getElementById('spk-alamat').value,
             no_vendor: document.getElementById('spk-vendor').value,
-            pkt: document.getElementById('spk-pkt').value,
+            
+            // Hantar Array ke Backend!
+            senarai_pkt: tatasusunanPkt, 
+            
             blok: document.getElementById('spk-blok').value,
             jenis_kerja: document.getElementById('spk-jenis').value,
             mode: document.getElementById('spk-mode').value,
@@ -344,8 +379,7 @@ if (borangDaftarSPK) {
             frequency_month: document.getElementById('spk-freq').value,
             tarikh_mula: document.getElementById('spk-mula').value,
             tarikh_tamat: document.getElementById('spk-tamat').value,
-            created_by: userSesi.email, 
-            senarai_pkt: [] 
+            created_by: userSesi.email
         };
 
         const respons = await panggilAPI('createSPK', payloadSPK);
@@ -354,7 +388,7 @@ if (borangDaftarSPK) {
         btnDaftarSPK.disabled = false;
 
         if (respons && respons.status) {
-            Swal.fire('Pendaftaran SPK Berjaya', 'SPK baharu telah direkodkan dalam pangkalan data.', 'success')
+            Swal.fire('Pendaftaran SPK Berjaya', `SPK baharu direkodkan.<br>Sistem telah mendaftarkan <b>${tatasusunanPkt.length} PKT</b> untuk SPK ini.`, 'success')
             .then(() => {
                 borangDaftarSPK.reset(); 
                 bukaModul('utama'); 
@@ -607,3 +641,4 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
 });
+
