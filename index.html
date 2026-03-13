@@ -90,7 +90,7 @@
                 <span id="paparan-role" class="role-badge">ROLE</span>
             </div>
             <ul class="senarai-menu">
-                <li><a href="#" data-target="utama" class="menu-item aktif"><i class="fas fa-home"></i> Halaman Utama</a></li>
+                <li><a href="#" data-target="utama" class="menu-item aktif"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="menu-kerani sembunyi"><a href="#" data-target="daftar-spk" class="menu-item"><i class="fas fa-file-contract"></i> Daftar SPK</a></li>
                 <li class="menu-kerani sembunyi"><a href="#" data-target="bayaran" class="menu-item"><i class="fas fa-money-check-alt"></i> Rekod Bayaran</a></li>
                 <li class="menu-fs sembunyi"><a href="#" data-target="mohon-vo" class="menu-item"><i class="fas fa-plus-circle"></i> Mohon VO</a></li>
@@ -104,8 +104,32 @@
         <main id="kandungan-utama" class="kandungan">
             
             <section id="modul-utama" class="modul-aktif">
-                <h2>Selamat Datang</h2>
-                <p>Sila pilih menu di sebelah untuk memulakan tugasan anda.</p>
+                <h2>Dashboard Utama</h2>
+                <p>Selamat datang ke Sistem Pengurusan SPK FPMSB Tenang.</p>
+                
+                <div class="dashboard-grid">
+                    <div class="dash-kad kad-biru">
+                        <div class="ikon"><i class="fas fa-file-signature"></i></div>
+                        <div class="info">
+                            <h3>Modul SPK</h3>
+                            <p>Urus pendaftaran & rekod</p>
+                        </div>
+                    </div>
+                    <div class="dash-kad kad-hijau">
+                        <div class="ikon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="info">
+                            <h3>Modul Bayaran</h3>
+                            <p>Kemaskini kuantiti & nilai</p>
+                        </div>
+                    </div>
+                    <div class="dash-kad kad-oren">
+                        <div class="ikon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="info">
+                            <h3>Modul VO</h3>
+                            <p>Permohonan & Kelulusan</p>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="modul-daftar-spk" class="modul-sembunyi">
@@ -335,6 +359,8 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script src="js/api.js"></script>
     <script src="js/app.js"></script>
 
