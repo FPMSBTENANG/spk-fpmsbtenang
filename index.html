@@ -169,10 +169,27 @@
 
                     <h3 class="tajuk-seksyen" style="margin-top:20px; color:var(--primary-color); border-bottom:1px solid #ccc; padding-bottom:5px;">Maklumat Kerja & PKT</h3>
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label>PKT</label>
-                            <input type="text" id="spk-pkt" required placeholder="Cth: 001 atau PELBAGAI">
+                        
+                        <div class="form-group span-2">
+                            <label>Jenis PKT</label>
+                            <div style="display:flex; gap:20px; margin-top:5px;">
+                                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:normal;">
+                                    <input type="radio" name="jenis_pkt" value="TUNGGAL" checked> Satu PKT Sahaja
+                                </label>
+                                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; font-weight:normal;">
+                                    <input type="radio" name="jenis_pkt" value="PELBAGAI"> Pelbagai PKT
+                                </label>
+                            </div>
                         </div>
+
+                        <div class="form-group span-2">
+                            <label id="label-pkt">No. PKT</label>
+                            <input type="text" id="spk-pkt" required placeholder="Cth: 001">
+                            <small id="hint-pkt" class="skrin-sembunyi" style="color:var(--primary-color); font-weight:bold; display:block; margin-top:5px;">
+                                💡 Sila pisahkan setiap PKT menggunakan koma. Contoh: 001, 002, 001G, 003G
+                            </small>
+                        </div>
+
                         <div class="form-group">
                             <label>Blok</label>
                             <input type="text" id="spk-blok">
@@ -189,17 +206,22 @@
                                 <option value="LUMPSUM">Lump Sum</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
                             <label>Unit</label>
                             <select id="spk-unit" required style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc;">
+                                <option value="" disabled selected>Pilih Unit...</option>
                                 <option value="HEK">Hektar (HEK)</option>
                                 <option value="TAN">Tan (TAN)</option>
                                 <option value="POKOK">Pokok</option>
-                                <option value="POKOK">Beg</option>
                                 <option value="PUS">Pusingan</option>
-                                <option value="LS">Lump Sum</option>
+                                <option value="BEG">Beg</option>
+                                <option value="LITER">Liter</option>
+                                <option value="KG">Kilogram (KG)</option>
+                                <option value="LS">Lump Sum (LS)</option>
                             </select>
                         </div>
+
                         <div class="form-group">
                             <label>Kuantiti Keseluruhan</label>
                             <input type="number" step="0.01" id="spk-kuantiti" required>
@@ -250,7 +272,6 @@
 
                     <button type="submit" class="btn-utama" style="margin-top: 30px;">Daftar SPK Induk</button>
                 </form>
-            </section>
             
             <section id="modul-bayaran" class="modul-sembunyi">
                 <h2>Rekod Bayaran Bulanan</h2>
@@ -382,5 +403,6 @@
     </script>
 </body>
 </html>
+
 
 
