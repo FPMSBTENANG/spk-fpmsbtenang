@@ -313,19 +313,28 @@ const btnTambahPkt = document.getElementById('btn-tambah-pkt');
 const containerBarisPkt = document.getElementById('container-baris-pkt');
 const spkKuantitiTotal = document.getElementById('spk-kuantiti-total');
 const spkNilaiTotal = document.getElementById('spk-nilai-total');
+
+// A. Logik Buka/Tutup Kotak Wang Amanah & Cara Bayaran
 const spkAmanah = document.getElementById('spk-amanah');
 const kotakAmanah = document.getElementById('kotak-nilai-amanah');
+const kotakCaraBayaran = document.getElementById('kotak-cara-bayaran'); 
 
-// A. Logik Buka/Tutup Kotak Wang Amanah
 if(spkAmanah) {
     spkAmanah.addEventListener('change', (e) => {
         if(e.target.value === 'YA') {
             kotakAmanah.classList.remove('skrin-sembunyi');
+            if(kotakCaraBayaran) kotakCaraBayaran.classList.remove('skrin-sembunyi');
             document.getElementById('spk-nilai-amanah').required = true;
+            if(document.getElementById('spk-cara-bayaran')) document.getElementById('spk-cara-bayaran').required = true;
         } else {
             kotakAmanah.classList.add('skrin-sembunyi');
+            if(kotakCaraBayaran) kotakCaraBayaran.classList.add('skrin-sembunyi');
             document.getElementById('spk-nilai-amanah').required = false;
             document.getElementById('spk-nilai-amanah').value = '';
+            if(document.getElementById('spk-cara-bayaran')) {
+                document.getElementById('spk-cara-bayaran').required = false;
+                document.getElementById('spk-cara-bayaran').value = '';
+            }
         }
     });
 }
@@ -465,6 +474,7 @@ if (borangDaftarSPK) {
             ada_tahanan: document.getElementById('spk-tahanan').value,
             ada_amanah: document.getElementById('spk-amanah').value,
             nilai_amanah: document.getElementById('spk-nilai-amanah').value || 0,
+            cara_bayaran: document.getElementById('spk-cara-bayaran') ? document.getElementById('spk-cara-bayaran').value : "", // TAMBAHAN PENTING
             insuran: document.getElementById('spk-insuran').value,
             frequency_month: document.getElementById('spk-freq').value,
             tarikh_mula: document.getElementById('spk-mula').value,
@@ -486,6 +496,8 @@ if (borangDaftarSPK) {
                 containerBarisPkt.innerHTML = '';
                 tambahBarisPkt(false);
                 btnTambahPkt.classList.add('skrin-sembunyi');
+                if(kotakCaraBayaran) kotakCaraBayaran.classList.add('skrin-sembunyi');
+                if(kotakAmanah) kotakAmanah.classList.add('skrin-sembunyi');
                 kiraTotalSPK();
                 
                 bukaModul('utama'); 
