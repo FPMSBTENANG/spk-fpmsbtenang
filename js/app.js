@@ -9,6 +9,7 @@ const skrinDashboard = document.getElementById('skrin-dashboard');
 
 const borangLogin = document.getElementById('borang-login');
 const btnMasuk = document.getElementById('btn-masuk');
+const checkboxIngat = document.getElementById('ingat-saya'); // Pemboleh ubah baru
 
 const borangDaftar = document.getElementById('borang-daftar');
 const btnDaftar = document.getElementById('btn-daftar');
@@ -33,7 +34,8 @@ const senaraiModul = document.querySelectorAll('main > section');
 // 2. AWALAN (INITIALIZATION) PADA WAKTU LOAD
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    const sesiUser = localStorage.getItem('spk_user');
+    // Gunakan sessionStorage supaya automatik logout bila tutup PWA/Browser
+    const sesiUser = sessionStorage.getItem('spk_user');
     
     if (sesiUser) {
         const user = JSON.parse(sesiUser);
@@ -41,6 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         skrinLogin.classList.replace('skrin-sembunyi', 'skrin-aktif');
         skrinDashboard.classList.replace('skrin-aktif', 'skrin-sembunyi');
+        
+        // Semak jika ada ID pengguna yang disimpan (Logik Ingat Saya)
+        const savedUsername = localStorage.getItem('spk_saved_username');
+        if (savedUsername) {
+            document.getElementById('login-username').value = savedUsername;
+            if (checkboxIngat) checkboxIngat.checked = true;
+        }
     }
 });
 
@@ -122,7 +131,16 @@ borangLogin.addEventListener('submit', async (e) => {
 
     if (respons && respons.status) {
         const userData = respons.data;
-        localStorage.setItem('spk_user', JSON.stringify(userData));
+        
+        // Simpan sesi aktif ke sessionStorage (hilang bila app tutup)
+        sessionStorage.setItem('spk_user', JSON.stringify(userData));
+        
+        // Simpan atau buang ID Pengguna berdasarkan kotak 'Ingat Saya'
+        if (checkboxIngat && checkboxIngat.checked) {
+            localStorage.setItem('spk_saved_username', usernameInput);
+        } else {
+            localStorage.removeItem('spk_saved_username');
+        }
         
         borangLogin.reset();
         binaDashboard(userData);
@@ -187,13 +205,12 @@ menuItems.forEach(item => {
         
         bukaModul(targetModul);
         
-        // Tutup sidebar automatik untuk pengguna mobile
         if (window.innerWidth <= 768) {
             sidebar.classList.remove('buka-mobile');
         }
 
         if(targetModul === 'kelulusan-vo') {
-            const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+            const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
             semakNotifikasi(userSesi);
         }
     });
@@ -220,10 +237,8 @@ btnProfil.addEventListener('click', () => {
 // ==========================================
 btnMenu.addEventListener('click', () => {
     if (window.innerWidth <= 768) {
-        // Mode Telefon
         sidebar.classList.toggle('buka-mobile');
     } else {
-        // Mode PC / Desktop
         sidebar.classList.toggle('sembunyi-desktop');
         kandunganUtama.classList.toggle('kembang-desktop');
     }
@@ -241,7 +256,7 @@ btnLogout.addEventListener('click', () => {
         cancelButtonText: 'Batal'
     }).then((result) => {
         if (result.isConfirmed) {
-            localStorage.removeItem('spk_user');
+            sessionStorage.removeItem('spk_user');
             window.location.reload(); 
         }
     });
@@ -265,7 +280,7 @@ if (borangProfil) {
         const newEmel = document.getElementById('profil-emel').value;
         const newPass = document.getElementById('profil-password').value; 
 
-        const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+        const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
         const respons = await panggilAPI('updateProfile', {
             id_user: userSesi.id_user,
@@ -281,8 +296,9 @@ if (borangProfil) {
             Swal.fire('Berjaya!', 'Profil anda telah dikemas kini.', 'success');
             userSesi.username = respons.data.username;
             userSesi.email = respons.data.email;
-            userSesi.requirePasswordChange = false;
-            localStorage.setItem('spk_user', JSON.stringify(userSesi));
+            userSesi.requirePasswordChange = false; 
+            
+            sessionStorage.setItem('spk_user', JSON.stringify(userSesi));
             
             paparanNama.textContent = respons.data.username;
             document.getElementById('profil-password').value = ""; 
@@ -306,7 +322,7 @@ if (borangDaftarSPK) {
         btnDaftarSPK.textContent = "Sedang Menyimpan...";
         btnDaftarSPK.disabled = true;
 
-        const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+        const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
         const payloadSPK = {
             no_spk: document.getElementById('spk-no').value,
@@ -363,7 +379,7 @@ if (borangBayaran) {
         btnBayar.textContent = "Sedang Merekod...";
         btnBayar.disabled = true;
 
-        const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+        const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
         const payloadBayaran = {
             no_spk: document.getElementById('bayaran-no-spk').value,
@@ -417,7 +433,7 @@ if (borangMohonVO) {
         btnMohon.textContent = "Sedang Menghantar...";
         btnMohon.disabled = true;
 
-        const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+        const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
 
         const payloadVO = {
             no_spk: document.getElementById('vo-no-spk').value,
@@ -532,7 +548,7 @@ async function semakNotifikasi(user) {
 // 14. LOGIK BUTANG LULUS & TOLAK (DALAM KAD VO)
 // ==========================================
 window.prosesVO = async function(noSpk, tindakan, catatan = "") {
-    const userSesi = JSON.parse(localStorage.getItem('spk_user'));
+    const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
     
     if(tindakan === 'LULUS') {
         Swal.fire({
@@ -549,7 +565,6 @@ window.prosesVO = async function(noSpk, tindakan, catatan = "") {
             }
         });
     } else {
-        // Untuk tolak, terus jalankan sebab dah confirm kat modal
         laksanakanProsesVO(noSpk, tindakan, catatan, userSesi);
     }
 };
@@ -592,4 +607,3 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     }
     window.prosesVO(noSpk, 'TOLAK', catatan);
 });
-
