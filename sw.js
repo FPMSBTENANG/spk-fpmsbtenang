@@ -1,7 +1,8 @@
 // Fail: sw.js
 // Service Worker untuk cache fail statik PWA (HTML, CSS, JS)
 
-const CACHE_NAME = 'spk-fpmsb-cache-v6';
+// VERSI DINAIKKAN KE V7 UNTUK MEMAKSA KEMAS KINI UI (KOTAK CARA BAYARAN)
+const CACHE_NAME = 'spk-fpmsb-cache-v7';
 
 // Senarai fail yang kita nak simpan dalam memori telefon
 const urlsToCache = [
@@ -61,7 +62,3 @@ self.addEventListener('fetch', event => {
   );
 
 });
-
-
-
-
