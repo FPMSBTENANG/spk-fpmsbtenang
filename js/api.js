@@ -4,7 +4,7 @@
 // ⚠️ AMARAN PENTING: 
 // Gantikan URL di bawah dengan URL Web App Google Apps Script kau yang sebenar!
 // Pastikan kau copy URL yang berakhir dengan /exec
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzuixGTZbdh6gVlPCBu6v20vt6bvds0nY99hPFG-k6Yed8I0vDW9VJEumRUjR-78fyL/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyPp5bzoRW7Vr7UBujVSwrHpZXY24Af-wRP2fkMbLc9Aj38sAyGpSO6JTLjgPnujt6r/exec"; 
 
 /**
  * Fungsi utama untuk menghantar arahan dan data ke Backend
@@ -39,6 +39,7 @@ async function panggilAPI(action, data) {
     }
 
 }
+
 
 
 
