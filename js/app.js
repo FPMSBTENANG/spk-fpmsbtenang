@@ -1,6 +1,6 @@
 // Fail: js/app.js
 // Otak Sistem PWA (Kawal UI, Sesi, API Fetch, Carian, dan Graf)
-// Versi: Dikembangkan (Expanded) & Dioptimumkan (Fix 1-7)
+// Versi: Dikembangkan (Expanded) & Dioptimumkan sepenuhnya
 
 // ==========================================
 // 1. PEMBOLEH UBAH DOM (Elemen HTML)
@@ -35,7 +35,6 @@ function kemaskiniJam() {
         elJam.textContent = masa.toLocaleDateString('ms-MY', tetapan);
     }
 }
-// Jalankan jam setiap 1 saat
 setInterval(kemaskiniJam, 1000);
 kemaskiniJam();
 
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 const btnTema = document.getElementById('btn-tema');
 const ikonTema = btnTema ? btnTema.querySelector('i') : null;
 
-// Semak tema memori
 if (localStorage.getItem('spk_tema') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     if (ikonTema) {
@@ -97,7 +95,6 @@ if (togglePassword && inputPassword) {
     });
 }
 
-// Togol Borang Login/Daftar
 const linkDaftar = document.getElementById('link-daftar');
 const linkLogin = document.getElementById('link-login');
 const teksTukarDaftar = document.getElementById('teks-tukar-daftar');
@@ -123,8 +120,6 @@ if(linkLogin) {
 // ==========================================
 // 4. AUTENTIKASI (LOGIN / DAFTAR / LOGOUT)
 // ==========================================
-
-// FIX #1: Popup Daftar Akaun Berjaya
 if (borangDaftar) {
     borangDaftar.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -158,7 +153,6 @@ if (borangDaftar) {
     });
 }
 
-// FIX #2(a): Popup Amaran Tukar Temp Pass First Login
 if (borangLogin) {
     borangLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -188,7 +182,6 @@ if (borangLogin) {
             borangLogin.reset();
             binaDashboard(respons.data);
             
-            // Semak jika perlukan penukaran kata laluan (TEMP_PASS)
             if (respons.data.requirePasswordChange) {
                 Swal.fire({
                     title: 'Perhatian!',
@@ -205,7 +198,6 @@ if (borangLogin) {
     });
 }
 
-// FIX #3: Log Keluar Dihidupkan Semula
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
@@ -238,10 +230,8 @@ function binaDashboard(user) {
     document.getElementById('profil-nama').value = user.username;
     document.getElementById('profil-emel').value = user.email;
 
-    // Sembunyikan semua menu spesifik dahulu
     document.querySelectorAll('.menu-kerani, .menu-fs, .menu-afc-fc').forEach(el => el.classList.add('skrin-sembunyi'));
     
-    // Paparkan mengikut peranan
     const role = user.role.toUpperCase();
     if (role === 'KERANI' || role === 'ADMIN') {
         document.querySelectorAll('.menu-kerani').forEach(el => el.classList.remove('skrin-sembunyi'));
@@ -267,10 +257,8 @@ menuItems.forEach(item => {
         const target = item.getAttribute('data-target');
         bukaModul(target);
         
-        // Tutup menu jika di skrin kecil
         if (window.innerWidth <= 768) sidebar.classList.remove('buka-mobile');
         
-        // Kemas kini notifikasi bila buka tab kelulusan
         if (target === 'kelulusan-vo') {
             const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
             semakNotifikasi(userSesi);
@@ -286,11 +274,9 @@ function bukaModul(idModul) {
         modulTerpilih.classList.replace('modul-sembunyi', 'modul-aktif');
     }
     
-    // Panggil data graf jika buka Dashboard Utama
     if(idModul === 'utama') tarikDataDashboard(); 
 }
 
-// Butang Profil dari Navbar
 const btnProfil = document.getElementById('btn-profil');
 if (btnProfil) {
     btnProfil.addEventListener('click', () => { 
@@ -299,7 +285,6 @@ if (btnProfil) {
     });
 }
 
-// Butang Menu (Hamburger)
 const btnMenu = document.getElementById('btn-menu');
 if (btnMenu) {
     btnMenu.addEventListener('click', () => {
@@ -319,17 +304,15 @@ async function tarikDataDashboard() {
     const respons = await panggilAPI('getDashboardData', {});
     
     if (respons && respons.status) {
-        // Kemas kini nombor infografik
         document.getElementById('stat-spk').textContent = respons.data.total_spk;
         document.getElementById('stat-bayaran').textContent = `RM ${respons.data.jumlah_bayaran.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
         document.getElementById('stat-vo-lulus').textContent = respons.data.vo_lulus;
         document.getElementById('stat-vo-pending').textContent = respons.data.vo_pending;
 
-        // Lukis Graf Chart.js
         const ctx = document.getElementById('grafSpkBayaran').getContext('2d');
         
         if (grafDashboard) {
-            grafDashboard.destroy(); // Buang graf lama sebelum lukis baru
+            grafDashboard.destroy(); 
         }
         
         grafDashboard = new Chart(ctx, {
@@ -353,7 +336,7 @@ async function tarikDataDashboard() {
 }
 
 // ==========================================
-// 7. CARIAN UNIVERSAL SPK (FIX #5)
+// 7. CARIAN UNIVERSAL SPK
 // ==========================================
 const btnCarian = document.getElementById('btn-carian');
 if (btnCarian) {
@@ -374,7 +357,6 @@ if (btnCarian) {
             document.getElementById('paparan-hasil-carian').classList.remove('skrin-sembunyi');
             const d = respons.data;
             
-            // Render Info Induk (Termasuk Tarikh - Fix #5)
             const tarikhMula = new Date(d.info_spk.tarikh_mula).toLocaleDateString('ms-MY');
             const tarikhTamat = new Date(d.info_spk.tarikh_tamat).toLocaleDateString('ms-MY');
             
@@ -389,7 +371,6 @@ if (btnCarian) {
                 <p><strong>Status:</strong> <span class="badge-status ${d.info_spk.status === 'ACTIVE' ? 'badge-lulus' : 'badge-batal'}">${d.info_spk.status}</span></p>
             `;
 
-            // FIX #5: Papar Jadual Pecahan PKT jika ada data
             const seksyenDetailPkt = document.getElementById('seksyen-detail-pkt');
             if (d.detail_pkt && d.detail_pkt.length > 0) {
                 seksyenDetailPkt.classList.remove('skrin-sembunyi');
@@ -406,7 +387,6 @@ if (btnCarian) {
                 seksyenDetailPkt.classList.add('skrin-sembunyi');
             }
 
-            // Render Jadual Bayaran
             let htmlBayar = d.bayaran.map(b => `
                 <tr>
                     <td>${new Date(b.tarikh).toLocaleDateString('ms-MY')}</td>
@@ -417,7 +397,6 @@ if (btnCarian) {
             `).join('');
             document.getElementById('hasil-jadual-bayaran').innerHTML = htmlBayar || `<tr><td colspan="4" style="text-align:center;">Tiada sejarah bayaran</td></tr>`;
 
-            // Render Jadual VO
             let htmlVo = d.vo.map(v => `
                 <tr>
                     <td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
@@ -437,13 +416,12 @@ if (btnCarian) {
 }
 
 // ==========================================
-// 8. LOGIK SPK INDUK & PKT DINAMIK (KEKAL)
+// 8. LOGIK SPK INDUK & PKT DINAMIK 
 // ==========================================
 const spkJenisPkt = document.getElementById('spk-jenis-pkt');
 const btnTambahPkt = document.getElementById('btn-tambah-pkt');
 const containerBarisPkt = document.getElementById('container-baris-pkt');
 
-// Logik Buka/Tutup Wang Amanah di Borang SPK
 const spkAmanah = document.getElementById('spk-amanah');
 if (spkAmanah) {
     spkAmanah.addEventListener('change', (e) => {
@@ -453,7 +431,6 @@ if (spkAmanah) {
     });
 }
 
-// Logik Tambah Baris PKT Dinamik
 if (spkJenisPkt) {
     spkJenisPkt.addEventListener('change', (e) => {
         if (e.target.value === 'PELBAGAI') { 
@@ -507,7 +484,6 @@ if (btnTambahPkt) {
     btnTambahPkt.addEventListener('click', () => tambahBarisPkt(true));
 }
 
-// Inisialisasi baris pertama PKT
 setTimeout(() => {
     const rowAwal = containerBarisPkt?.querySelector('.baris-pkt-item');
     if(rowAwal) {
@@ -532,7 +508,6 @@ function kiraTotalSPK() {
     document.getElementById('spk-nilai-total').value = totalN.toFixed(2);
 }
 
-// Hantar Borang Daftar SPK
 const borangDaftarSPK = document.getElementById('borang-daftar-spk');
 if (borangDaftarSPK) {
     borangDaftarSPK.addEventListener('submit', async (e) => {
@@ -593,7 +568,7 @@ if (borangDaftarSPK) {
 }
 
 // ==========================================
-// 9. MODUL REKOD BAYARAN (FIX #7 - AUTO-ISI)
+// 9. MODUL REKOD BAYARAN (FIX #7 - AUTO-ISI & WANG AMANAH)
 // ==========================================
 const btnTarikBayaran = document.getElementById('btn-tarik-bayaran');
 if (btnTarikBayaran) {
@@ -610,7 +585,6 @@ if (btnTarikBayaran) {
         btnTarikBayaran.disabled = false;
 
         if(respons && respons.status) {
-            // Isi data automatik
             document.getElementById('bayaran-no-spk').value = respons.data.no_spk;
             document.getElementById('bayaran-no-po').value = respons.data.no_po;
             document.getElementById('bayaran-pkt').value = respons.data.pkt;
@@ -618,13 +592,13 @@ if (btnTarikBayaran) {
             const caraDb = respons.data.cara_bayaran;
             document.getElementById('bayaran-cara-db').value = caraDb || "Tiada";
             
-            // FIX #7: Logik Tunjuk/Sembunyi Wang Amanah berdasarkan 'Potong Sijil Bayaran'
+            // FIX #7: Tunjuk/Sembunyi Wang Amanah berdasarkan 'Potong Sijil Bayaran'
             const kotakAmanah = document.getElementById('kotak-bayaran-amanah');
             if (caraDb === "Potong Sijil Bayaran") {
                 kotakAmanah.classList.remove('skrin-sembunyi');
             } else {
                 kotakAmanah.classList.add('skrin-sembunyi');
-                document.getElementById('bayaran-amanah').value = ""; // Kosongkan nilai jika hide
+                document.getElementById('bayaran-amanah').value = ""; 
             }
             
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
@@ -662,6 +636,7 @@ if (borangBayaran) {
             Swal.fire('Berjaya', `Baki Kuantiti Terkini: ${respons.data.baki_terkini}`, respons.data.amaran_dihantar ? 'warning' : 'success').then(() => {
                 borangBayaran.reset();
                 document.getElementById('kotak-bayaran-amanah').classList.add('skrin-sembunyi');
+                document.getElementById('bayaran-cara-db').value = "";
             }); 
         } else { 
             Swal.fire('Ralat', respons.message, 'error'); 
@@ -691,14 +666,14 @@ if (btnTarikVo) {
             document.getElementById('vo-no-po').value = respons.data.no_po;
             document.getElementById('vo-pkt').value = respons.data.pkt;
             document.getElementById('vo-nilai-semasa').value = respons.data.nilai_semasa;
-            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
+            Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data ditarik!', showConfirmButton: false, timer: 1500});
         } else {
             Swal.fire('Gagal', respons.message, 'error');
         }
     });
 }
 
-// FIX #4: Logik Tunjuk/Sembunyi Kotak Input Berdasarkan Jenis VO
+// FIX #4: Logik Togol (Tunjuk/Sembunyi) Kotak Input VO Terperinci
 const voJenis = document.getElementById('vo-jenis');
 if (voJenis) {
     voJenis.addEventListener('change', (e) => {
@@ -709,20 +684,24 @@ if (voJenis) {
         const kotakMula = document.getElementById('kotak-vo-mula');
         const kotakTamat = document.getElementById('kotak-vo-tamat');
 
-        // Reset semua (Tunjuk Kuantiti, Sembunyi Tarikh) - Default "Tambahan Kuantiti"
-        kotakKuantiti.classList.remove('skrin-sembunyi'); 
-        kotakNilai.classList.remove('skrin-sembunyi');
-        kotakMula.classList.add('skrin-sembunyi'); 
-        kotakTamat.classList.add('skrin-sembunyi');
-
-        if(val.includes('Masa')) { 
-            // VO Masa (Sembunyi Kuantiti, Tunjuk Tarikh)
+        if(val === 'Tambahan Kuantiti') { 
+            // 1. VO Kuantiti & Nilai Sahaja
+            kotakKuantiti.classList.remove('skrin-sembunyi'); 
+            kotakNilai.classList.remove('skrin-sembunyi'); 
+            kotakMula.classList.add('skrin-sembunyi'); 
+            kotakTamat.classList.add('skrin-sembunyi');
+            
+        } else if (val === 'Sambung Masa (EOT)') {
+            // 2. VO Masa Sahaja
             kotakKuantiti.classList.add('skrin-sembunyi'); 
             kotakNilai.classList.add('skrin-sembunyi'); 
             kotakMula.classList.remove('skrin-sembunyi'); 
             kotakTamat.classList.remove('skrin-sembunyi');
-        } else if(val.includes('Kontrak')) {
-            // VO Sambung Kontrak (Tunjuk Kuantiti DAN Tunjuk Tarikh)
+            
+        } else {
+            // 3. Sambung Kontrak (Papar Semua Kotak: Kuantiti + Masa)
+            kotakKuantiti.classList.remove('skrin-sembunyi'); 
+            kotakNilai.classList.remove('skrin-sembunyi'); 
             kotakMula.classList.remove('skrin-sembunyi'); 
             kotakTamat.classList.remove('skrin-sembunyi');
         }
@@ -777,7 +756,6 @@ async function semakNotifikasi(user) {
     if (respons && respons.status && respons.data) {
         const role = user.role.toUpperCase();
         
-        // Kira notifikasi (Badge)
         let kiraTugas = respons.data.filter(i => 
             (role === 'AFC' && i.status_afc === 'PENDING') || 
             (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')
@@ -786,7 +764,6 @@ async function semakNotifikasi(user) {
         badgeNotifikasi.textContent = kiraTugas; 
         badgeNotifikasi.classList.toggle('sembunyi', kiraTugas === 0);
         
-        // Render Senarai VO
         const container = document.getElementById('senarai-vo-container');
         if (container) {
             if (respons.data.length === 0) {
@@ -808,7 +785,6 @@ async function semakNotifikasi(user) {
                                 <p><strong>Pemohon:</strong> ${i.pemohon}</p>
                     `;
                     
-                    // Papar data berbeza ikut jenis VO
                     if (i.jenis_vo.includes('Masa')) {
                         htmlCard += `<p><strong>Tarikh Tamat Baharu:</strong> ${i.tarikh_tamat_baru}</p>`;
                     } else if (i.jenis_vo.includes('Kontrak')) {
@@ -825,7 +801,7 @@ async function semakNotifikasi(user) {
                     }
                     
                     if (i.catatan_tolak) htmlCard += `<p style="color:var(--danger); margin-top:8px;"><strong>Sebab Tolak:</strong> ${i.catatan_tolak}</p>`;
-                    htmlCard += `</div>`; // Tutup kad-body
+                    htmlCard += `</div>`; 
                     
                     if (bolehTindakan) {
                         htmlCard += `
@@ -835,7 +811,7 @@ async function semakNotifikasi(user) {
                             </div>
                         `;
                     }
-                    htmlCard += `</div>`; // Tutup kad-vo
+                    htmlCard += `</div>`; 
                     return htmlCard;
                 }).join('');
             }
@@ -843,7 +819,6 @@ async function semakNotifikasi(user) {
     }
 }
 
-// Fungsi Butang Kelulusan (Global)
 window.prosesVO = function(noSpk, tindakan, catatan = "") {
     if(tindakan === 'LULUS') {
         Swal.fire({ 
@@ -879,7 +854,6 @@ async function laksanakanProsesVO(noSpk, tindakan, catatan) {
     }
 }
 
-// Kawalan Modal Tolak VO
 window.bukaModalTolak = function(noSpk) { 
     document.getElementById('tolak-spk-no').value = noSpk; 
     document.getElementById('tolak-catatan').value = ""; 
@@ -894,7 +868,7 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     window.prosesVO(document.getElementById('tolak-spk-no').value, 'TOLAK', catatan);
 });
 
-// FIX #2(b): Logik Borang Profil (Simpan & Auto-Redirect)
+// FIX #2: Logik Borang Profil
 const borangProfil = document.getElementById('borang-profil');
 if (borangProfil) {
     borangProfil.addEventListener('submit', async (e) => {
@@ -922,16 +896,15 @@ if (borangProfil) {
                 icon: 'success',
                 confirmButtonColor: '#1e40af'
             }).then(() => {
-                // Kemas kini memori browser
                 userSesi.username = respons.data.username; 
                 userSesi.email = respons.data.email; 
                 userSesi.requirePasswordChange = false;
                 sessionStorage.setItem('spk_user', JSON.stringify(userSesi));
                 
-                // Reset UI & Redirect
                 paparanNama.textContent = respons.data.username; 
                 document.getElementById('profil-password').value = "";
-                bukaModul('utama'); // Redirect ke Dashboard
+                
+                bukaModul('utama');
             });
         } else { 
             Swal.fire('Ralat Kemas Kini', respons ? respons.message : "Gagal berhubung dengan pelayan", 'error'); 
