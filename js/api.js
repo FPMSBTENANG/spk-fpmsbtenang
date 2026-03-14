@@ -4,7 +4,7 @@
 // ⚠️ AMARAN PENTING: 
 // Gantikan URL di bawah dengan URL Web App Google Apps Script kau yang sebenar!
 // Pastikan kau copy URL yang berakhir dengan /exec
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxx9kIKU7X1tQ9d6z3BzrFJdEfnxtiSIdmELmr3b2UqQHKG82kUvi9hR1vtkFqUxCQI/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzTvblCfLzoV5K44Y8f5YBj6Q_9c7j1Uz6Owx45QMfLqfuxtX_KXer_85tshoCcJjPS/exec"; 
 
 /**
  * Fungsi utama untuk menghantar arahan dan data ke Backend
