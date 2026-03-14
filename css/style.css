@@ -1,38 +1,26 @@
-:root {
-    --primary-color: #1e40af;       
-    --primary-hover: #1e3a8a;
-    --secondary-color: #3b82f6;     
-    --accent-gradient: linear-gradient(135deg, #1e40af, #3b82f6);
-    --danger: #ef4444;
-    --success: #10b981;
-    --warning: #f59e0b;
+/* Fail: css/style.css
+   Reka Bentuk Premium UI/UX untuk Sistem SPK FPMSB 
+   Versi: V2.6 (Kalkulator Sijil Bayaran Universal) */
 
+:root {
+    --primary-color: #1e40af; --primary-hover: #1e3a8a;
+    --secondary-color: #3b82f6; --accent-gradient: linear-gradient(135deg, #1e40af, #3b82f6);
+    --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
     --bg-body: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-    --glass-bg: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-bg: rgba(255, 255, 255, 0.75); --glass-border: rgba(255, 255, 255, 0.5);
     --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
-    
-    --input-bg: rgba(255, 255, 255, 0.9);
-    --input-border: rgba(0, 0, 0, 0.1);
-    --text-utama: #0f172a;
-    --text-pudar: #475569;
-    
+    --input-bg: rgba(255, 255, 255, 0.9); --input-border: rgba(0, 0, 0, 0.1);
+    --text-utama: #0f172a; --text-pudar: #475569;
     --sidebar-width: 260px;
 }
 
 [data-theme="dark"] {
     --bg-body: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-    --glass-bg: rgba(15, 23, 42, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(15, 23, 42, 0.75); --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    
-    --input-bg: rgba(30, 41, 59, 0.8);
-    --input-border: rgba(255, 255, 255, 0.15);
-    --text-utama: #f8fafc;
-    --text-pudar: #cbd5e1;
-    
-    --primary-color: #3b82f6;
-    --primary-hover: #60a5fa;
+    --input-bg: rgba(30, 41, 59, 0.8); --input-border: rgba(255, 255, 255, 0.15);
+    --text-utama: #f8fafc; --text-pudar: #cbd5e1;
+    --primary-color: #3b82f6; --primary-hover: #60a5fa;
     --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
 }
 
@@ -50,7 +38,7 @@ body { background: var(--bg-body); background-attachment: fixed; color: var(--te
 #skrin-login { justify-content: center; align-items: center; }
 .login-container { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-radius: 20px; padding: 40px 30px; width: 90%; max-width: 420px; animation: slideUp 0.6s ease-out; }
 .logo-box { text-align: center; margin-bottom: 30px; }
-.logo-box h2 { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin-bottom: 5px; font-weight: 800; }
+.logo-box h2 { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; font-weight: 800; }
 .logo-box p { color: var(--text-pudar); font-size: 14px; letter-spacing: 1px;}
 
 .form-group { margin-bottom: 18px; position: relative;}
@@ -60,7 +48,6 @@ body { background: var(--bg-body); background-attachment: fixed; color: var(--te
 
 .toggle-password { position: absolute; right: 15px; top: 40px; cursor: pointer; color: var(--text-pudar); font-size: 16px; transition: 0.3s;}
 .toggle-password:hover { color: var(--primary-color); }
-
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .span-2 { grid-column: span 2; }
 .tajuk-seksyen { font-size: 16px; margin-bottom: 15px; color: var(--primary-color); border-bottom: 2px solid var(--glass-border); padding-bottom: 8px; }
@@ -102,7 +89,6 @@ section p { color: var(--text-pudar); line-height: 1.6; margin-bottom: 25px; fon
 .stat-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; text-align: center; box-shadow: var(--glass-shadow); transition: 0.3s;}
 .stat-card:hover { transform: translateY(-5px); }
 .stat-card i { font-size: 30px; margin-bottom: 10px; color: var(--primary-color); }
-.stat-card h3 { font-size: 14px; color: var(--text-pudar); margin-bottom: 5px; font-weight: 600;}
 .stat-card .nombor { font-size: 28px; font-weight: 800; color: var(--text-utama); }
 .chart-container { background: var(--glass-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); width: 100%; height: 400px;}
 
@@ -115,14 +101,24 @@ section p { color: var(--text-pudar); line-height: 1.6; margin-bottom: 25px; fon
 .history-table th { background: rgba(59, 130, 246, 0.1); color: var(--primary-color); font-weight: bold; }
 .history-table tr:hover { background: rgba(0,0,0,0.02); }
 
+/* V2.5: GAUGE METER */
 .gauge-wrapper { background: var(--input-bg); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--input-border); margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-.gauge-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text-utama); }
+.gauge-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
 .gauge-track { width: 100%; height: 14px; background: rgba(0,0,0,0.1); border-radius: 20px; overflow: hidden; position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
 .gauge-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s; width: 0%; }
 .fill-hijau { background: linear-gradient(90deg, #10b981, #34d399); }
 .fill-kuning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .fill-merah { background: linear-gradient(90deg, #ef4444, #f87171); }
 .gauge-footer { text-align: right; font-size: 12px; color: var(--text-pudar); margin-top: 6px; font-weight: 600; }
+
+/* BAHARU V2.6: RUMUSAN BAYARAN BERSIH & INPUT TABLE */
+.tabel-input-bayaran { width: 100%; min-width: 500px; margin-bottom: 20px; }
+.tabel-input-bayaran input { padding: 10px; font-size: 13px; text-align: center; }
+.tabel-input-bayaran td { padding: 5px; }
+
+.rumusan-bayaran { background: var(--glass-border); padding: 25px; border-radius: 15px; text-align: right; margin-top: 20px; border: 2px dashed var(--primary-color); }
+.rumusan-bayaran h3 { font-size: 16px; color: var(--text-pudar); margin-bottom: 5px; }
+.net-payable { font-size: 32px; font-weight: 800; color: var(--primary-color); }
 
 .senarai-kad { display: flex; flex-direction: column; gap: 20px; }
 .kad-vo { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; box-shadow: var(--glass-shadow); border-left: 6px solid var(--primary-color); transition: 0.3s; }
@@ -134,15 +130,11 @@ section p { color: var(--text-pudar); line-height: 1.6; margin-bottom: 25px; fon
 .badge-lulus { background: linear-gradient(135deg, #10b981, #059669); }
 .badge-batal { background: linear-gradient(135deg, #ef4444, #dc2626); }
 .badge-tamat { background: linear-gradient(135deg, #475569, #1e293b); }
-.kad-body p { margin-bottom: 8px; font-size: 14px; color: var(--text-pudar); }
-.kad-body p strong { color: var(--text-utama); }
 .kad-actions { margin-top: 20px; display: flex; gap: 15px; }
 .btn-hijau { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px; border: none; border-radius: 10px; cursor: pointer; flex: 1; font-weight: bold; transition: 0.3s;}
-.btn-hijau:hover { opacity: 0.9; transform: translateY(-2px); }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
 .modal-content { background: var(--glass-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
-.modal-content h3 { color: var(--primary-color); margin-bottom: 15px; font-weight: 800; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; }
 .modal-actions { display: flex; gap: 15px; margin-top: 25px; }
 .borang-panjang { background: var(--glass-bg); padding: 30px; border-radius: 20px; box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);}
 
