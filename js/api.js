@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw8g_f0XjWwxGyi4LmMbyeBEoZKhuYkrcLPS-1jBAL-6puFZmvwpefkbCFddMHPj71W/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwGi-DuszXyWJhCziZxk7KduLDGl_KdEqmXeJm6xtBuaY1RY-uk46e_j5bEomTiyGLT/exec"; 
 
 async function panggilAPI(action, data) {
     try {
