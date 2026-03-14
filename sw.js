@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spk-fpmsb-cache-v9';
+const CACHE_NAME = 'spk-fpmsb-cache-v10';
 
 const urlsToCache = [
   './',
