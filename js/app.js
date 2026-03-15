@@ -1,10 +1,3 @@
-// Fail: js/app.js
-// Otak Sistem PWA (Kawal UI, Sesi, API Fetch, Carian, dan Graf)
-// Versi: V3.7.1 (Patch: BUG 1 PKT kalkulator + BUG 2 VO senarai PKT universal)
-
-// ==========================================
-// 1. PEMBOLEH UBAH DOM
-// ==========================================
 const skrinLogin = document.getElementById('skrin-login');
 const skrinDashboard = document.getElementById('skrin-dashboard');
 const borangLogin = document.getElementById('borang-login');
@@ -18,9 +11,6 @@ const paparanRole = document.getElementById('paparan-role');
 const badgeNotifikasi = document.getElementById('badge-notifikasi');
 let grafDashboard = null;
 
-// ==========================================
-// 2. JAM REAL-TIME & AWALAN (INIT)
-// ==========================================
 function kemaskiniJam() {
     const elJam = document.getElementById('paparan-jam');
     if (elJam) {
@@ -36,8 +26,6 @@ setInterval(kemaskiniJam, 1000);
 kemaskiniJam();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // [V3.7 FIX BUG 1] Jana row PKT pertama secara dinamik
-    // supaya event listener sentiasa terpasang dari mula
     tambahBarisPkt(false);
 
     const sesiUser = sessionStorage.getItem('spk_user');
@@ -54,9 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ==========================================
-// 3. TEMA (DARK MODE) & MATA PASSWORD
-// ==========================================
 const btnTema = document.getElementById('btn-tema');
 const ikonTema = btnTema ? btnTema.querySelector('i') : null;
 
@@ -89,9 +74,6 @@ if (togglePassword && inputPassword) {
     });
 }
 
-// ==========================================
-// 4. AUTENTIKASI (LOGIN / DAFTAR / LOGOUT / LUPA PASSWORD)
-// ==========================================
 function tunjukBorangLogin() {
     borangLogin.classList.remove('skrin-sembunyi');
     borangDaftar.classList.add('skrin-sembunyi');
@@ -121,7 +103,6 @@ if (linkLogin) linkLogin.addEventListener('click', (e) => { e.preventDefault(); 
 if (linkLupaPassword) linkLupaPassword.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLupaPassword(); });
 if (linkKembaliLogin) linkKembaliLogin.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLogin(); });
 
-// --- Borang Daftar ---
 if (borangDaftar) {
     borangDaftar.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -142,7 +123,6 @@ if (borangDaftar) {
     });
 }
 
-// --- Borang Log Masuk ---
 if (borangLogin) {
     borangLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -173,7 +153,6 @@ if (borangLogin) {
     });
 }
 
-// --- Borang Lupa Kata Laluan [V3.5] ---
 if (borangLupaPassword) {
     borangLupaPassword.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -192,7 +171,6 @@ if (borangLupaPassword) {
     });
 }
 
-// --- Butang Logout [V3.6] ---
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
@@ -209,9 +187,6 @@ if (btnLogout) {
     });
 }
 
-// ==========================================
-// 5. NAVIGASI MENU & BINA DASHBOARD
-// ==========================================
 function binaDashboard(user) {
     skrinLogin.classList.replace('skrin-aktif', 'skrin-sembunyi');
     skrinDashboard.classList.replace('skrin-sembunyi', 'skrin-aktif');
@@ -270,9 +245,6 @@ if (btnMenu) {
     });
 }
 
-// ==========================================
-// 6. DASHBOARD GRAF (CHART.JS)
-// ==========================================
 async function tarikDataDashboard() {
     const respons = await panggilAPI('getDashboardData', {});
     if (respons && respons.status) {
@@ -299,9 +271,6 @@ async function tarikDataDashboard() {
     }
 }
 
-// ==========================================
-// 7. CARIAN UNIVERSAL SPK
-// ==========================================
 const btnCarian = document.getElementById('btn-carian');
 if (btnCarian) {
     btnCarian.addEventListener('click', async () => {
@@ -425,9 +394,6 @@ if (borangAmanah) {
     });
 }
 
-// ==========================================
-// 8. DAFTAR SPK — [V3.7.1 FIX BUG 1]
-// ==========================================
 const spkJenisPkt = document.getElementById('spk-jenis-pkt');
 const btnTambahPkt = document.getElementById('btn-tambah-pkt');
 const containerBarisPkt = document.getElementById('container-baris-pkt');
@@ -443,8 +409,6 @@ if (spkAmanah) {
 
 if (spkJenisPkt) {
     spkJenisPkt.addEventListener('change', (e) => {
-        // [V3.7.1 FIX BUG 1] Untuk KEDUA-DUA pilihan, clear dan jana semula
-        // row pertama supaya event listener sentiasa terpasang dengan betul
         containerBarisPkt.innerHTML = '';
         tambahBarisPkt(false);
 
@@ -457,8 +421,6 @@ if (spkJenisPkt) {
     });
 }
 
-// [V3.7 FIX BUG 1] Row pertama dijana oleh JS (bukan hardcode HTML)
-// supaya event listener terpasang dari DOMContentLoaded
 function tambahBarisPkt(bolehBuang = true) {
     const div = document.createElement('div');
     div.className = 'baris-pkt-item';
@@ -549,9 +511,6 @@ if (borangDaftarSPK) {
     });
 }
 
-// ==========================================
-// 9. REKOD BAYARAN — [V3.7 FIX BUG 3]
-// ==========================================
 function kiraNetPayable() {
     let totalKasar = 0;
     document.querySelectorAll('.baris-kerja-bayaran').forEach(tr => {
@@ -584,7 +543,6 @@ if (btnTarikBayaran) {
         if (respons && respons.status) {
             const d = respons.data;
 
-            // [V3.7 FIX BUG 3] Semak status SPK sebelum benarkan rekod bayaran
             if (d.spk_status !== 'ACTIVE') {
                 document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi');
                 return Swal.fire({
@@ -686,11 +644,6 @@ if (borangBayaran) {
     });
 }
 
-// ==========================================
-// 10. MOHON VO — [V3.7.1 FIX BUG 2]
-// ==========================================
-
-// Helper: Auto-kira nilai setiap baris PKT VO dan jumlah keseluruhan
 function kiraJumlahVO() {
     let totalNilai = 0;
     document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
@@ -724,8 +677,6 @@ if (btnTarikVo) {
             const kotakVoKuantiti = document.getElementById('kotak-vo-kuantiti');
             const kotakVoNilai = document.getElementById('kotak-vo-nilai');
 
-            // [V3.7.1 FIX BUG 2] Tunjuk jadual PKT untuk SEMUA kes
-            // Konsisten dengan sijil bayaran — tiada conditional length
             if (d.senarai_pkt && d.senarai_pkt.length > 0) {
                 kawasanPktVO.classList.remove('skrin-sembunyi');
                 kotakVoKuantiti.classList.add('skrin-sembunyi');
@@ -749,7 +700,6 @@ if (btnTarikVo) {
                 kiraJumlahVO();
 
             } else {
-                // Fallback jika tiada data PKT langsung dari DB
                 kawasanPktVO.classList.add('skrin-sembunyi');
                 kotakVoKuantiti.classList.remove('skrin-sembunyi');
                 kotakVoNilai.classList.remove('skrin-sembunyi');
@@ -765,7 +715,6 @@ if (btnTarikVo) {
     });
 }
 
-// [V3.7.1] voJenis hanya urus tarikh — kuantiti/nilai dikendalikan jadual PKT
 const voJenis = document.getElementById('vo-jenis');
 if (voJenis) {
     voJenis.addEventListener('change', (e) => {
@@ -780,7 +729,6 @@ if (voJenis) {
             kMula.classList.remove('skrin-sembunyi');
             kTamat.classList.remove('skrin-sembunyi');
         } else {
-            // Tambahan Kontrak (Kuantiti + Masa)
             kMula.classList.remove('skrin-sembunyi');
             kTamat.classList.remove('skrin-sembunyi');
         }
@@ -796,14 +744,12 @@ if (borangMohonVO) {
         const btn = e.target.querySelector('button');
         btn.textContent = "Sedang Menghantar..."; btn.disabled = true;
 
-        // [V3.7.1] Kumpul kuantiti dan nilai dari jadual PKT
         let kuantitiHantar = 0, nilaiHantar = 0;
         document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
             kuantitiHantar += parseFloat(tr.querySelector('.vo-pkt-kuantiti').value) || 0;
             nilaiHantar += parseFloat(tr.querySelector('.vo-pkt-nilai').value) || 0;
         });
 
-        // Validasi kuantiti (kecuali Sambung Masa sahaja)
         const jenisVO = document.getElementById('vo-jenis').value;
         if (jenisVO !== 'Sambung Masa (EOT)' && kuantitiHantar <= 0) {
             btn.textContent = "Hantar Permohonan VO"; btn.disabled = false;
@@ -828,7 +774,6 @@ if (borangMohonVO) {
         if (respons && respons.status) {
             Swal.fire('Permohonan Dihantar', respons.message, 'success').then(() => {
                 borangMohonVO.reset();
-                // Reset kawasan VO ke keadaan asal
                 document.getElementById('kawasan-pkt-vo').classList.add('skrin-sembunyi');
                 document.getElementById('kotak-vo-kuantiti').classList.remove('skrin-sembunyi');
                 document.getElementById('kotak-vo-nilai').classList.remove('skrin-sembunyi');
@@ -844,9 +789,6 @@ if (borangMohonVO) {
     });
 }
 
-// ==========================================
-// 11. PENAMATAN SPK
-// ==========================================
 const btnTarikTamat = document.getElementById('btn-tarik-tamat');
 if (btnTarikTamat) {
     btnTarikTamat.addEventListener('click', async () => {
@@ -899,9 +841,6 @@ if (borangMohonTamat) {
     });
 }
 
-// ==========================================
-// 12. NOTIFIKASI & KELULUSAN VO/TAMAT
-// ==========================================
 async function semakNotifikasi(user) {
     if (!user) return;
     const role = user.role.toUpperCase();
@@ -1004,9 +943,6 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     window.prosesTindakan(document.getElementById('tolak-spk-no').value, jenis, 'TOLAK', catatan);
 });
 
-// ==========================================
-// 13. PROFIL
-// ==========================================
 const borangProfil = document.getElementById('borang-profil');
 if (borangProfil) {
     borangProfil.addEventListener('submit', async (e) => {
@@ -1047,9 +983,6 @@ if (borangProfil) {
     });
 }
 
-// ==========================================
-// 14. PENGURUSAN AKAUN PENDING (ADMIN) [V3.6]
-// ==========================================
 async function semakBadgePendingAkaun(user) {
     if (!user || user.role.toUpperCase() !== 'ADMIN') return;
     const respons = await panggilAPI('getSenaraiPending', { role: user.role.toUpperCase() });
