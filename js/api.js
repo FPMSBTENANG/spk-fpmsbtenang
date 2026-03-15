@@ -2,7 +2,7 @@
 // Jambatan Komunikasi PWA ↔ Google Apps Script
 // Versi: V3.6 Patch (Fix: resetPassword dikecualikan dari semakan token)
 
-const API_URL = "https://script.google.com/macros/s/AKfycbw1K4sl5xD75hCBEUEUmFuV2gBO4b4XbcvzmI1P_QuxtpexMR3tPAZmr-DFleoLS9C4/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzNNevb1kwRgKviL8b2u-cJluU2Bm-qn-DNrYAMEByAItIAdN1xBdP0TnRQXXvITuBd/exec"; 
 
 async function panggilAPI(action, data = {}) {
     
