@@ -1,24 +1,24 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyFnLJ6Rm3KnTPbclG8CSQiTiGugyqqoHMGEiE4OtOb1LpX-IRBghSUiCIXvsOYuA_f/exec"; 
+// Fail: js/api.js
+// Jambatan Komunikasi PWA ↔ Google Apps Script
+// Versi: V3.6 Patch (Fix: resetPassword dikecualikan dari semakan token)
+
+const API_URL = "https://script.google.com/macros/s/AKfycbw1K4sl5xD75hCBEUEUmFuV2gBO4b4XbcvzmI1P_QuxtpexMR3tPAZmr-DFleoLS9C4/exec"; 
 
 async function panggilAPI(action, data = {}) {
     
-    // 1. PEMINTASAN KESELAMATAN (SECURITY INTERCEPTOR)
-    // Dapatkan maklumat sesi pengguna yang sedang log masuk
     const sesiUser = JSON.parse(sessionStorage.getItem('spk_user'));
 
-    // Jika aksi ini BUKAN login dan BUKAN register (maksudnya aksi sistem tertutup)
-    // KITA WAJIB HANTAR TOKEN!
-    if (action !== 'login' && action !== 'register') {
+    // Senarai action yang TIDAK perlukan token (user belum/tidak login)
+    // [V3.6 FIX] - Tambah 'resetPassword' supaya borang lupa kata laluan
+    //              tidak kena "Akses Ditolak" semasa user belum login
+    const publicActions = ['login', 'register', 'resetPassword'];
+
+    if (!publicActions.includes(action)) {
         
-        // Semak jika pengguna mempunyai token yang sah di dalam storan peranti
         if (sesiUser && sesiUser.token_sesi && sesiUser.email) {
-            
-            // Suntik maklumat rahsia ini secara automatik ke dalam payload
             data.token_sesi = sesiUser.token_sesi;
             data.email_sesi = sesiUser.email;
-            
         } else {
-            // Jika cuba "bypass" (masuk tanpa login), tendang keluar serta-merta!
             Swal.fire({
                 icon: 'error',
                 title: 'Akses Ditolak',
@@ -27,11 +27,10 @@ async function panggilAPI(action, data = {}) {
                 sessionStorage.removeItem('spk_user');
                 window.location.reload();
             });
-            return null; // Hentikan API call
+            return null;
         }
     }
 
-    // 2. LAKSANA PANGGILAN RANGKAIAN (NETWORK REQUEST)
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -40,7 +39,6 @@ async function panggilAPI(action, data = {}) {
                 payload: data 
             })
         });
-        
         return await response.json();
         
     } catch (error) {
