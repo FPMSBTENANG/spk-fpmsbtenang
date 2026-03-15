@@ -1,6 +1,6 @@
 // Fail: js/app.js
 // Otak Sistem PWA (Kawal UI, Sesi, API Fetch, Carian, dan Graf)
-// Versi: V2.6 Final (Kalkulator Sijil Bayaran Universal + Expanded Code)
+// Versi: V3.0 Enterprise (Keselamatan Token & Hashing Activated)
 
 // ==========================================
 // 1. PEMBOLEH UBAH DOM (Elemen HTML)
@@ -63,9 +63,7 @@ const ikonTema = btnTema ? btnTema.querySelector('i') : null;
 
 if (localStorage.getItem('spk_tema') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
-    if (ikonTema) {
-        ikonTema.classList.replace('fa-moon', 'fa-sun');
-    }
+    if (ikonTema) ikonTema.classList.replace('fa-moon', 'fa-sun');
 }
 
 if (btnTema) {
@@ -136,7 +134,13 @@ if (borangDaftar) {
         btn.disabled = false;
         
         if (respons && respons.status) {
-            Swal.fire({ title: 'Berjaya!', text: respons.message, icon: 'success' }).then(() => { 
+            // V3.0: Mesej pendaftaran kini lebih responsif mengikut status (PENDING / ADMIN)
+            Swal.fire({ 
+                title: 'Berjaya!', 
+                text: respons.message, 
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+            }).then(() => { 
                 borangDaftar.reset(); 
                 document.getElementById('link-login').click(); 
             });
@@ -163,6 +167,7 @@ if (borangLogin) {
         btn.disabled = false;
 
         if (respons && respons.status) {
+            // V3.0: Respons login kini membawa 'token_sesi' dan disimpan rapi di sessionStorage
             sessionStorage.setItem('spk_user', JSON.stringify(respons.data));
             
             if (document.getElementById('ingat-saya').checked) {
@@ -176,8 +181,8 @@ if (borangLogin) {
             
             if (respons.data.requirePasswordChange) {
                 Swal.fire({ 
-                    title: 'Perhatian!', 
-                    text: 'Sila tukar kata laluan sementara anda di menu Profil.', 
+                    title: 'Perhatian Keselamatan!', 
+                    text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.', 
                     icon: 'warning' 
                 }).then(() => bukaModul('profil'));
             }
@@ -314,17 +319,13 @@ async function tarikDataDashboard() {
                     borderRadius: 8
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 }
 
 // ==========================================
-// 7. CARIAN UNIVERSAL SPK (V2.6 FORMAT BAYARAN)
+// 7. CARIAN UNIVERSAL SPK
 // ==========================================
 const btnCarian = document.getElementById('btn-carian');
 if (btnCarian) {
@@ -359,7 +360,6 @@ if (btnCarian) {
                 <p><strong>Status:</strong> <span class="badge-status ${d.info_spk.status === 'ACTIVE' ? 'badge-lulus' : (d.info_spk.status === 'TAMAT' ? 'badge-tamat' : 'badge-batal')}">${d.info_spk.status}</span></p>
             `;
 
-            // Butang Kemaskini Bank Draf
             const btnBukaAmanah = document.getElementById('btn-buka-amanah');
             if (d.info_spk.status === 'ACTIVE') {
                 btnBukaAmanah.classList.remove('skrin-sembunyi');
@@ -373,7 +373,6 @@ if (btnCarian) {
                 btnBukaAmanah.classList.add('skrin-sembunyi');
             }
 
-            // Lukis Gauge Meter
             const gaugeWrapper = document.getElementById('paparan-gauge');
             if (d.info_spk.kuantiti_asal > 0) {
                 gaugeWrapper.classList.remove('skrin-sembunyi');
@@ -393,7 +392,6 @@ if (btnCarian) {
                 gaugeWrapper.classList.add('skrin-sembunyi');
             }
 
-            // Senarai PKT Detail
             const seksyenDetailPkt = document.getElementById('seksyen-detail-pkt');
             if (d.detail_pkt && d.detail_pkt.length > 0) {
                 seksyenDetailPkt.classList.remove('skrin-sembunyi');
@@ -409,11 +407,8 @@ if (btnCarian) {
                 seksyenDetailPkt.classList.add('skrin-sembunyi');
             }
 
-            // SEJARAH BAYARAN (V2.6: Papar WA, WT, Denda, Bersih)
             const htmlBayar = d.bayaran.map(b => {
                 const potongTerkumpul = (parseFloat(b.wang_amanah)||0) + (parseFloat(b.wang_tahanan)||0) + (parseFloat(b.denda)||0);
-                
-                // Jika ada catatan denda, selitkan sebagai title hover
                 let titleDenda = b.catatan_denda ? `title="Denda: ${b.catatan_denda}"` : "";
                 
                 return `
@@ -431,7 +426,6 @@ if (btnCarian) {
             
             document.getElementById('hasil-jadual-bayaran').innerHTML = htmlBayar || `<tr><td colspan="7" style="text-align:center;">Tiada sejarah bayaran</td></tr>`;
 
-            // Sejarah VO
             const htmlVo = d.vo.map(v => `
                 <tr>
                     <td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
@@ -450,7 +444,6 @@ if (btnCarian) {
     });
 }
 
-// Modal Kemaskini Amanah
 const btnBatalAmanah = document.getElementById('btn-batal-amanah');
 if (btnBatalAmanah) {
     btnBatalAmanah.addEventListener('click', () => {
@@ -487,7 +480,7 @@ if (borangAmanah) {
 }
 
 // ==========================================
-// 8. LOGIK DAFTAR SPK INDUK & PKT DINAMIK 
+// 8. LOGIK DAFTAR SPK INDUK 
 // ==========================================
 const spkJenisPkt = document.getElementById('spk-jenis-pkt');
 const btnTambahPkt = document.getElementById('btn-tambah-pkt');
@@ -622,10 +615,8 @@ if (borangDaftarSPK) {
 }
 
 // ==========================================
-// 9. V2.6: MODUL REKOD BAYARAN UNIVERSAL (AUTO-KIRA)
+// 9. MODUL REKOD BAYARAN UNIVERSAL 
 // ==========================================
-
-// Fungsi Kira Net Payable (Universal)
 function kiraNetPayable() {
     let totalKasar = 0;
     
@@ -634,23 +625,19 @@ function kiraNetPayable() {
         const kuantiti = parseFloat(tr.querySelector('.bayaran-row-kuantiti').value) || 0;
         const peratus = parseFloat(tr.querySelector('.bayaran-row-peratus').value) || 0;
         
-        // Formula Asas Sijil Bayaran Interim
         const kasar = harga * kuantiti * (peratus / 100);
         tr.querySelector('.bayaran-row-kasar').value = kasar.toFixed(2);
         totalKasar += kasar;
     });
     
-    // Tolak semua potongan
     const wa = parseFloat(document.getElementById('bayaran-wa').value) || 0;
     const wt = parseFloat(document.getElementById('bayaran-wt').value) || 0;
     const denda = parseFloat(document.getElementById('bayaran-denda').value) || 0;
     
     const netBersih = totalKasar - wa - wt - denda;
-    
     document.getElementById('paparan-net-payable').textContent = `RM ${netBersih.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
 }
 
-// Attach listeners untuk Kotak Potongan
 ['bayaran-wa', 'bayaran-wt', 'bayaran-denda'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', kiraNetPayable);
 });
@@ -675,12 +662,10 @@ if (btnTarikBayaran) {
             document.getElementById('bayaran-no-po').value = d.no_po;
             document.getElementById('bayaran-cara-db').value = d.cara_bayaran || "Tiada";
             
-            // Buka Kawasan Kerja Kalkulator
             document.getElementById('kawasan-kerja-bayaran').classList.remove('skrin-sembunyi');
             
-            // Render Baris Kerja dari Pangkalan Data (Pelbagai PKT/Kerja)
             const tbody = document.getElementById('tbody-kerja-bayaran');
-            tbody.innerHTML = ''; // Clear lama
+            tbody.innerHTML = ''; 
             
             if(d.senarai_pkt && d.senarai_pkt.length > 0) {
                 d.senarai_pkt.forEach(pkt => {
@@ -695,17 +680,14 @@ if (btnTarikBayaran) {
                     `;
                     tbody.appendChild(tr);
                     
-                    // Attach Auto-Kira pada Kuantiti dan Peratus
                     tr.querySelector('.bayaran-row-kuantiti').addEventListener('input', kiraNetPayable);
                     tr.querySelector('.bayaran-row-peratus').addEventListener('input', kiraNetPayable);
                 });
             }
 
-            // Logik Hint WA berdasarkan Cara Bayaran DB
             const inputWa = document.getElementById('bayaran-wa');
             const hintWa = document.getElementById('hint-wa');
             
-            // Reset nilai potongan setiap kali tarik data baharu
             inputWa.value = 0; 
             document.getElementById('bayaran-wt').value = 0;
             document.getElementById('bayaran-denda').value = 0;
@@ -719,7 +701,7 @@ if (btnTarikBayaran) {
                 hintWa.style.color = "var(--warning)";
             }
             
-            kiraNetPayable(); // Laksanakan kiraan awal
+            kiraNetPayable();
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
             
         } else {
@@ -736,7 +718,6 @@ if (borangBayaran) {
         
         if(!document.getElementById('bayaran-no-spk').value) return Swal.fire('Ralat', 'Sila tarik data SPK dahulu.', 'error');
         
-        // Kumpul semua array kerja
         let senaraiKerja = [];
         let totalKuantitiDiisi = 0;
         
@@ -753,7 +734,6 @@ if (borangBayaran) {
             });
         });
         
-        // Validasi: Pastikan kerani tak hantar borang kosong
         if (totalKuantitiDiisi <= 0) {
             return Swal.fire('Perhatian', 'Sila masukkan kuantiti disiapkan sekurang-kurangnya untuk satu PKT/Kerja.', 'warning');
         }
@@ -899,7 +879,6 @@ if (btnTarikTamat) {
             document.getElementById('tamat-no-spk').value = d.info_spk.no_spk;
             document.getElementById('tamat-no-po').value = d.info_spk.no_po;
             
-            // Pengiraan Automatik Potongan Terkumpul di DB
             let totalAmanahPotong = 0;
             let totalTahananPotong = 0;
             
@@ -909,7 +888,6 @@ if (btnTarikTamat) {
                 totalAmanahPotong = parseFloat(d.info_spk.nilai_amanah) || 0;
             }
             
-            // Sum WT dari sejarah bayaran
             d.bayaran.forEach(b => totalTahananPotong += (parseFloat(b.wang_tahanan) || 0));
             
             document.getElementById('tamat-wang-tahanan').value = totalTahananPotong.toFixed(2);
@@ -957,7 +935,7 @@ if (borangMohonTamat) {
 }
 
 // ==========================================
-// 12. NOTIFIKASI KELULUSAN (VO & TAMAT)
+// 12. NOTIFIKASI & KELULUSAN
 // ==========================================
 async function semakNotifikasi(user) {
     if (!user) return;
@@ -968,7 +946,6 @@ async function semakNotifikasi(user) {
     
     let kiraTugas = 0;
 
-    // Render Senarai VO
     if (resVO && resVO.status && resVO.data) {
         let tasksVO = resVO.data.filter(i => (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')).length;
         kiraTugas += tasksVO;
@@ -994,7 +971,6 @@ async function semakNotifikasi(user) {
         }
     }
 
-    // Render Senarai Penamatan
     if (resTamat && resTamat.status && resTamat.data) {
         let tasksTamat = resTamat.data.filter(i => (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')).length;
         kiraTugas += tasksTamat;
@@ -1020,7 +996,6 @@ async function semakNotifikasi(user) {
     badgeNotifikasi.classList.toggle('sembunyi', kiraTugas === 0);
 }
 
-// Tindakan Universal LULUS
 window.prosesTindakan = function(noSpk, jenisModul, tindakan, catatan = "") {
     if(tindakan === 'LULUS') {
         const teks = jenisModul === 'VO' ? `Luluskan VO untuk SPK ${noSpk}?` : `Luluskan PENAMATAN untuk SPK ${noSpk}?`;
@@ -1059,7 +1034,6 @@ async function laksanakanTindakan(noSpk, jenisModul, tindakan, catatan) {
     }
 }
 
-// Modal Tindakan Universal TOLAK
 window.bukaModalTolak = function(noSpk, jenisModul) { 
     document.getElementById('tolak-spk-no').value = noSpk; 
     document.getElementById('tolak-jenis-modul').value = jenisModul; 
