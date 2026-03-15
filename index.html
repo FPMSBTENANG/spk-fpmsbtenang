@@ -94,7 +94,6 @@
                     </a>
                 </p>
             </form>
-
         </div>
     </div>
 
@@ -126,17 +125,13 @@
             <ul class="senarai-menu">
                 <li><a href="#" data-target="utama" class="menu-item aktif"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
                 <li class="menu-semua"><a href="#" data-target="carian" class="menu-item"><i class="fas fa-search"></i> Carian SPK / PO</a></li>
-
                 <li class="menu-kerani sembunyi"><a href="#" data-target="daftar-spk" class="menu-item"><i class="fas fa-file-contract"></i> Daftar SPK</a></li>
                 <li class="menu-kerani sembunyi"><a href="#" data-target="bayaran" class="menu-item"><i class="fas fa-money-check-alt"></i> Sijil Bayaran</a></li>
                 <li class="menu-kerani sembunyi"><a href="#" data-target="mohon-tamat" class="menu-item" style="color: #ef4444;"><i class="fas fa-calendar-times"></i> Penamatan SPK</a></li>
-
                 <li class="menu-fs sembunyi"><a href="#" data-target="mohon-vo" class="menu-item"><i class="fas fa-plus-circle"></i> Mohon VO</a></li>
-
                 <li class="menu-afc-fc sembunyi"><a href="#" data-target="kelulusan-vo" class="menu-item"><i class="fas fa-clipboard-check"></i> Kelulusan VO</a></li>
                 <li class="menu-afc-fc sembunyi"><a href="#" data-target="kelulusan-tamat" class="menu-item" style="color: #ef4444;"><i class="fas fa-file-signature"></i> Lulus Penamatan</a></li>
-
-                <!-- [V3.6 BAHARU] Menu ADMIN sahaja -->
+                <!-- Menu ADMIN [V3.6] -->
                 <li class="menu-admin sembunyi">
                     <a href="#" data-target="pengurusan-akaun" class="menu-item" style="color: #8b5cf6;">
                         <i class="fas fa-users-cog"></i> Pengurusan Akaun
@@ -158,30 +153,12 @@
                 <h2>Dashboard Analitik</h2>
                 <p>Ringkasan keseluruhan operasi Sistem SPK FPMSB.</p>
                 <div class="dashboard-stat-grid">
-                    <div class="stat-card">
-                        <i class="fas fa-file-signature"></i>
-                        <h3>Jumlah SPK Aktif</h3>
-                        <div class="nombor" id="stat-spk">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <h3>Jumlah Nilai Bayaran</h3>
-                        <div class="nombor" id="stat-bayaran">RM 0.00</div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-clipboard-list"></i>
-                        <h3>Permohonan VO (Lulus)</h3>
-                        <div class="nombor" id="stat-vo-lulus">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-hourglass-half"></i>
-                        <h3>VO (Tertunggak)</h3>
-                        <div class="nombor" id="stat-vo-pending" style="color:var(--warning);">0</div>
-                    </div>
+                    <div class="stat-card"><i class="fas fa-file-signature"></i><h3>Jumlah SPK Aktif</h3><div class="nombor" id="stat-spk">0</div></div>
+                    <div class="stat-card"><i class="fas fa-money-bill-wave"></i><h3>Jumlah Nilai Bayaran</h3><div class="nombor" id="stat-bayaran">RM 0.00</div></div>
+                    <div class="stat-card"><i class="fas fa-clipboard-list"></i><h3>Permohonan VO (Lulus)</h3><div class="nombor" id="stat-vo-lulus">0</div></div>
+                    <div class="stat-card"><i class="fas fa-hourglass-half"></i><h3>VO (Tertunggak)</h3><div class="nombor" id="stat-vo-pending" style="color:var(--warning);">0</div></div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="grafSpkBayaran"></canvas>
-                </div>
+                <div class="chart-container"><canvas id="grafSpkBayaran"></canvas></div>
             </section>
 
             <!-- MODUL CARIAN -->
@@ -202,13 +179,8 @@
                         </h3>
                         <div class="form-grid" id="hasil-info-spk" style="font-size:14px; color:var(--text-pudar);"></div>
                         <div id="paparan-gauge" class="gauge-wrapper skrin-sembunyi">
-                            <div class="gauge-header">
-                                <span>Status Penggunaan Kuantiti</span>
-                                <span id="gauge-peratus-teks">0%</span>
-                            </div>
-                            <div class="gauge-track">
-                                <div id="gauge-bar" class="gauge-fill fill-hijau"></div>
-                            </div>
+                            <div class="gauge-header"><span>Status Penggunaan Kuantiti</span><span id="gauge-peratus-teks">0%</span></div>
+                            <div class="gauge-track"><div id="gauge-bar" class="gauge-fill fill-hijau"></div></div>
                             <div class="gauge-footer" id="gauge-baki-teks">Baki: 0 / Asal: 0</div>
                         </div>
                     </div>
@@ -251,6 +223,7 @@
                         <div class="form-group span-2"><label>Alamat Kontraktor</label><input type="text" id="spk-alamat"></div>
                         <div class="form-group"><label>No. Vendor</label><input type="text" id="spk-vendor"></div>
                     </div>
+
                     <h3 class="tajuk-seksyen" style="margin-top:20px;">Maklumat Kerja & PKT</h3>
                     <div class="form-grid">
                         <div class="form-group"><label>Blok</label><input type="text" id="spk-blok"></div>
@@ -283,21 +256,17 @@
                                 <option value="PELBAGAI">Pelbagai PKT / Kerja</option>
                             </select>
                         </div>
+
                         <div class="span-2" style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--input-border);">
-                            <div id="container-baris-pkt">
-                                <div class="baris-pkt-item" style="display:grid; grid-template-columns: 2fr 2fr 2fr 2fr auto; gap:10px; align-items:end; margin-bottom:10px;">
-                                    <div class="form-group" style="margin:0;"><label>No. PKT / Kerja</label><input type="text" class="input-pkt-no" required></div>
-                                    <div class="form-group" style="margin:0;"><label>Kuantiti</label><input type="number" step="0.01" class="input-pkt-kuantiti" required></div>
-                                    <div class="form-group" style="margin:0;"><label>RM/Unit</label><input type="number" step="0.01" class="input-pkt-harga" required></div>
-                                    <div class="form-group" style="margin:0;"><label>Jumlah (RM)</label><input type="number" step="0.01" class="input-pkt-jumlah" readonly style="background:#e9ecef;"></div>
-                                    <button type="button" class="btn-buang-pkt btn-danger" style="padding:12px; height:max-content; display:none;"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
+                            <!-- [V3.7 FIX BUG 1] Container kosong — row pertama dijana oleh JS -->
+                            <div id="container-baris-pkt"></div>
                             <button type="button" id="btn-tambah-pkt" class="btn-sekunder skrin-sembunyi" style="margin-top:10px; width:100%;"><i class="fas fa-plus"></i> Tambah PKT Baru</button>
                         </div>
+
                         <div class="form-group"><label>Kuantiti Keseluruhan (Auto)</label><input type="number" step="0.01" id="spk-kuantiti-total" readonly style="background:#e9ecef;"></div>
                         <div class="form-group"><label>Nilai Kontrak RM (Auto)</label><input type="number" step="0.01" id="spk-nilai-total" readonly style="background:#e9ecef;"></div>
                     </div>
+
                     <h3 class="tajuk-seksyen" style="margin-top:20px;">Terma & Tempoh</h3>
                     <div class="form-grid">
                         <div class="form-group">
@@ -341,12 +310,14 @@
                         <input type="text" id="bayaran-carian-spk" placeholder="Masukkan No. SPK atau No. PO">
                         <button type="button" id="btn-tarik-bayaran" class="btn-utama" style="width:auto; padding: 0 20px;"><i class="fas fa-download"></i> Tarik</button>
                     </div>
+
                     <div id="kawasan-kerja-bayaran" class="skrin-sembunyi">
                         <div class="form-grid" style="margin-bottom:15px;">
                             <div class="form-group"><label>No. SPK (Auto)</label><input type="text" id="bayaran-no-spk" readonly style="background:#e9ecef;"></div>
                             <div class="form-group"><label>No. PO (Auto)</label><input type="text" id="bayaran-no-po" readonly style="background:#e9ecef;"></div>
                             <div class="form-group span-2"><label>Jenis Wang Amanah SPK Ini</label><input type="text" id="bayaran-cara-db" readonly style="background:#e9ecef; font-weight:bold;"></div>
                         </div>
+
                         <h3 class="tajuk-seksyen">Langkah 2: Isikan Kuantiti Disiapkan</h3>
                         <div style="overflow-x:auto;">
                             <table class="tabel-input-bayaran history-table">
@@ -354,6 +325,7 @@
                                 <tbody id="tbody-kerja-bayaran"></tbody>
                             </table>
                         </div>
+
                         <h3 class="tajuk-seksyen" style="margin-top:20px;">Langkah 3: Potongan & Rumusan</h3>
                         <div class="form-grid">
                             <div class="form-group"><label>Potongan Wang Amanah (RM) <span id="hint-wa" style="font-size:11px; font-weight:normal;"></span></label><input type="number" step="0.01" id="bayaran-wa" value="0"></div>
@@ -386,6 +358,7 @@
                         <div class="form-group"><label>PKT Utama (Auto)</label><input type="text" id="vo-pkt" readonly style="background:#e9ecef;"></div>
                         <div class="form-group"><label>Nilai Kontrak Semasa (RM)</label><input type="number" step="0.01" id="vo-nilai-semasa" readonly style="background:#e9ecef;"></div>
                     </div>
+
                     <h3 class="tajuk-seksyen" style="margin-top:20px;">Langkah 2: Butiran Permohonan</h3>
                     <div class="form-grid">
                         <div class="form-group span-2">
@@ -396,11 +369,45 @@
                                 <option value="Tambahan Kontrak (Kuantiti + Masa)">Tambahan Kontrak (Kuantiti + Masa)</option>
                             </select>
                         </div>
-                        <div class="form-group" id="kotak-vo-kuantiti"><label>Kuantiti Tambahan</label><input type="number" step="0.01" id="vo-kuantiti-mohon" value="0"></div>
-                        <div class="form-group" id="kotak-vo-nilai"><label>Nilai Tambahan (RM)</label><input type="number" step="0.01" id="vo-nilai-mohon" value="0"></div>
+
+                        <!-- [V3.7 BUG 2] Kawasan PKT Tunggal — papar bila SPK ada 1 PKT sahaja -->
+                        <div class="form-group" id="kotak-vo-kuantiti">
+                            <label>Kuantiti Tambahan</label>
+                            <input type="number" step="0.01" id="vo-kuantiti-mohon" value="0">
+                        </div>
+                        <div class="form-group" id="kotak-vo-nilai">
+                            <label>Nilai Tambahan (RM)</label>
+                            <input type="number" step="0.01" id="vo-nilai-mohon" value="0">
+                        </div>
                         <div class="form-group skrin-sembunyi" id="kotak-vo-mula"><label>Tarikh Mula Baharu</label><input type="date" id="vo-mula-baru"></div>
                         <div class="form-group skrin-sembunyi" id="kotak-vo-tamat"><label>Tarikh Tamat Baharu</label><input type="date" id="vo-tamat-baru"></div>
                     </div>
+
+                    <!-- [V3.7 BUG 2 BAHARU] Kawasan PKT Pelbagai — papar bila SPK ada pelbagai PKT -->
+                    <div id="kawasan-pkt-vo" class="skrin-sembunyi">
+                        <h3 class="tajuk-seksyen" style="margin-top:20px;">Senarai PKT / Kerja (Pelbagai)</h3>
+                        <p style="font-size:13px; color:var(--text-pudar); margin-bottom:10px;">
+                            <i class="fas fa-info-circle"></i> Isikan kuantiti tambahan dan semak harga unit. Harga boleh dikemaskini jika ada perubahan.
+                        </p>
+                        <div style="overflow-x:auto;">
+                            <table class="tabel-input-bayaran history-table">
+                                <thead>
+                                    <tr>
+                                        <th>PKT / Kerja</th>
+                                        <th>Harga/Unit Baharu (RM)</th>
+                                        <th>Kuantiti Tambahan</th>
+                                        <th>Nilai Tambahan (RM)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-pkt-vo"></tbody>
+                            </table>
+                        </div>
+                        <div class="rumusan-bayaran" style="margin-top:15px;">
+                            <h3>Jumlah Nilai Tambahan Keseluruhan</h3>
+                            <div class="net-payable" id="paparan-jumlah-vo">RM 0.00</div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-utama" style="margin-top: 20px;">Hantar Permohonan VO</button>
                 </form>
             </section>
@@ -460,11 +467,10 @@
                 </form>
             </section>
 
-            <!-- [V3.6 BAHARU] MODUL PENGURUSAN AKAUN (ADMIN) -->
+            <!-- MODUL PENGURUSAN AKAUN [V3.6] -->
             <section id="modul-pengurusan-akaun" class="modul-sembunyi">
                 <h2>Pengurusan Akaun Pengguna</h2>
                 <p>Semak dan luluskan permohonan pendaftaran akaun baharu yang menunggu kelulusan anda.</p>
-
                 <div id="senarai-pending-container" class="senarai-kad">
                     <p style="text-align:center; color:var(--text-pudar);"><i class="fas fa-spinner fa-spin"></i> Sedang memuat turun data...</p>
                 </div>
@@ -509,7 +515,7 @@
                 </div>
             </div>
 
-            <!-- [V3.6 BAHARU] MODAL TOLAK AKAUN PENDING -->
+            <!-- MODAL TOLAK AKAUN PENDING [V3.6] -->
             <div id="modal-tolak-akaun" class="modal-overlay skrin-sembunyi">
                 <div class="modal-content">
                     <h3><i class="fas fa-user-times" style="color:var(--danger);"></i> Tolak Permohonan Akaun</h3>
