@@ -1,34 +1,53 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzzp22JAYX2_DbfxMwHwY3nY4zyNUJXFJRrw9Wkjlyfjb0jilZvnv3DLyD-m2fAuU8/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbzzp22JAYX2_DbfxMwHwY3nY4zyNUJXFJRrw9Wkjlyfjb0jilZvnv3DLyD-m2fAuU8/exec"; 
 
-async function panggilAPI(action, data) {
+async function panggilAPI(action, data = {}) {
+    
+    // 1. PEMINTASAN KESELAMATAN (SECURITY INTERCEPTOR)
+    // Dapatkan maklumat sesi pengguna yang sedang log masuk
+    const sesiUser = JSON.parse(sessionStorage.getItem('spk_user'));
+
+    // Jika aksi ini BUKAN login dan BUKAN register (maksudnya aksi sistem tertutup)
+    // KITA WAJIB HANTAR TOKEN!
+    if (action !== 'login' && action !== 'register') {
+        
+        // Semak jika pengguna mempunyai token yang sah di dalam storan peranti
+        if (sesiUser && sesiUser.token_sesi && sesiUser.email) {
+            
+            // Suntik maklumat rahsia ini secara automatik ke dalam payload
+            data.token_sesi = sesiUser.token_sesi;
+            data.email_sesi = sesiUser.email;
+            
+        } else {
+            // Jika cuba "bypass" (masuk tanpa login), tendang keluar serta-merta!
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: 'Sesi anda tidak sah atau telah tamat. Sila log masuk semula.'
+            }).then(() => {
+                sessionStorage.removeItem('spk_user');
+                window.location.reload();
+            });
+            return null; // Hentikan API call
+        }
+    }
+
+    // 2. LAKSANA PANGGILAN RANGKAIAN (NETWORK REQUEST)
     try {
-        const respons = await fetch(GAS_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            redirect: 'follow',
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-            },
-            body: JSON.stringify({
-                action: action,
-                payload: data
+            body: JSON.stringify({ 
+                action: action, 
+                payload: data 
             })
         });
         
-        const hasil = await respons.json();
-        return hasil;
+        return await response.json();
         
     } catch (error) {
-        console.error("Ralat API:", error);
+        console.error("Ralat Rangkaian API:", error);
         return { 
             status: false, 
-            message: "Gagal berhubung dengan pelayan. Sila semak sambungan internet atau URL API anda." 
+            message: "Gagal berhubung dengan pelayan. Sila semak sambungan internet anda." 
         };
     }
-
 }
-
-
-
-
-
-
