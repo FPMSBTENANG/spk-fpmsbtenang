@@ -1,6 +1,6 @@
 // Fail: js/app.js
-// Otak Sistem PWA
-// Versi: V3.7 (Fix: PKT row pertama + VO senarai PKT + Semak status SPK bayaran)
+// Otak Sistem PWA (Kawal UI, Sesi, API Fetch, Carian, dan Graf)
+// Versi: V3.7.1 (Patch: BUG 1 PKT kalkulator + BUG 2 VO senarai PKT universal)
 
 // ==========================================
 // 1. PEMBOLEH UBAH DOM
@@ -25,7 +25,10 @@ function kemaskiniJam() {
     const elJam = document.getElementById('paparan-jam');
     if (elJam) {
         const masa = new Date();
-        const tetapan = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const tetapan = {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        };
         elJam.textContent = masa.toLocaleDateString('ms-MY', tetapan);
     }
 }
@@ -33,7 +36,8 @@ setInterval(kemaskiniJam, 1000);
 kemaskiniJam();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // [V3.7 FIX BUG 1] Jana row PKT pertama secara dinamik supaya event listener terpasang
+    // [V3.7 FIX BUG 1] Jana row PKT pertama secara dinamik
+    // supaya event listener sentiasa terpasang dari mula
     tambahBarisPkt(false);
 
     const sesiUser = sessionStorage.getItem('spk_user');
@@ -86,7 +90,7 @@ if (togglePassword && inputPassword) {
 }
 
 // ==========================================
-// 4. AUTENTIKASI
+// 4. AUTENTIKASI (LOGIN / DAFTAR / LOGOUT / LUPA PASSWORD)
 // ==========================================
 function tunjukBorangLogin() {
     borangLogin.classList.remove('skrin-sembunyi');
@@ -117,6 +121,7 @@ if (linkLogin) linkLogin.addEventListener('click', (e) => { e.preventDefault(); 
 if (linkLupaPassword) linkLupaPassword.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLupaPassword(); });
 if (linkKembaliLogin) linkKembaliLogin.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLogin(); });
 
+// --- Borang Daftar ---
 if (borangDaftar) {
     borangDaftar.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -137,6 +142,7 @@ if (borangDaftar) {
     });
 }
 
+// --- Borang Log Masuk ---
 if (borangLogin) {
     borangLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -155,8 +161,11 @@ if (borangLogin) {
             borangLogin.reset();
             binaDashboard(respons.data);
             if (respons.data.requirePasswordChange) {
-                Swal.fire({ title: 'Perhatian Keselamatan!', text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.', icon: 'warning' })
-                .then(() => bukaModul('profil'));
+                Swal.fire({
+                    title: 'Perhatian Keselamatan!',
+                    text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.',
+                    icon: 'warning'
+                }).then(() => bukaModul('profil'));
             }
         } else {
             Swal.fire('Gagal', respons ? respons.message : "Ralat pelayan.", 'error');
@@ -164,6 +173,7 @@ if (borangLogin) {
     });
 }
 
+// --- Borang Lupa Kata Laluan [V3.5] ---
 if (borangLupaPassword) {
     borangLupaPassword.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -182,11 +192,14 @@ if (borangLupaPassword) {
     });
 }
 
+// --- Butang Logout [V3.6] ---
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
-        Swal.fire({ title: 'Log Keluar?', icon: 'question', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' })
-        .then(async (r) => {
+        Swal.fire({
+            title: 'Log Keluar?', icon: 'question',
+            showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya'
+        }).then(async (r) => {
             if (r.isConfirmed) {
                 try { await panggilAPI('logout', {}); } catch (err) { console.warn("Gagal hubungi server semasa logout.", err); }
                 sessionStorage.removeItem('spk_user');
@@ -258,7 +271,7 @@ if (btnMenu) {
 }
 
 // ==========================================
-// 6. DASHBOARD GRAF
+// 6. DASHBOARD GRAF (CHART.JS)
 // ==========================================
 async function tarikDataDashboard() {
     const respons = await panggilAPI('getDashboardData', {});
@@ -267,13 +280,19 @@ async function tarikDataDashboard() {
         document.getElementById('stat-bayaran').textContent = `RM ${respons.data.jumlah_bayaran.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
         document.getElementById('stat-vo-lulus').textContent = respons.data.vo_lulus;
         document.getElementById('stat-vo-pending').textContent = respons.data.vo_pending;
+
         const ctx = document.getElementById('grafSpkBayaran').getContext('2d');
         if (grafDashboard) grafDashboard.destroy();
         grafDashboard = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['SPK Aktif', 'VO Lulus', 'VO Tertunggak'],
-                datasets: [{ label: 'Statistik Data', data: [respons.data.total_spk, respons.data.vo_lulus, respons.data.vo_pending], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'], borderRadius: 8 }]
+                datasets: [{
+                    label: 'Statistik Data',
+                    data: [respons.data.total_spk, respons.data.vo_lulus, respons.data.vo_pending],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                    borderRadius: 8
+                }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
@@ -343,9 +362,11 @@ if (btnCarian) {
             if (d.detail_pkt && d.detail_pkt.length > 0) {
                 seksyenDetailPkt.classList.remove('skrin-sembunyi');
                 document.getElementById('hasil-jadual-pkt').innerHTML = d.detail_pkt.map(p => `
-                    <tr><td>${p.kod_pkt}</td><td>${p.kuantiti}</td>
-                    <td>RM ${parseFloat(p.harga_seunit).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
-                    <td>RM ${parseFloat(p.jumlah_rm).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td></tr>`).join('');
+                    <tr>
+                        <td>${p.kod_pkt}</td><td>${p.kuantiti}</td>
+                        <td>RM ${parseFloat(p.harga_seunit).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
+                        <td>RM ${parseFloat(p.jumlah_rm).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
+                    </tr>`).join('');
             } else {
                 seksyenDetailPkt.classList.add('skrin-sembunyi');
             }
@@ -364,9 +385,11 @@ if (btnCarian) {
             document.getElementById('hasil-jadual-bayaran').innerHTML = htmlBayar || `<tr><td colspan="7" style="text-align:center;">Tiada sejarah bayaran</td></tr>`;
 
             const htmlVo = d.vo.map(v => `
-                <tr><td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
-                <td>${v.jenis_vo}</td><td>${v.kuantiti_dipohon}</td>
-                <td>${v.status_afc}</td><td>${v.status_fc}</td></tr>`).join('');
+                <tr>
+                    <td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
+                    <td>${v.jenis_vo}</td><td>${v.kuantiti_dipohon}</td>
+                    <td>${v.status_afc}</td><td>${v.status_fc}</td>
+                </tr>`).join('');
             document.getElementById('hasil-jadual-vo').innerHTML = htmlVo || `<tr><td colspan="5" style="text-align:center;">Tiada sejarah VO</td></tr>`;
 
         } else {
@@ -403,7 +426,7 @@ if (borangAmanah) {
 }
 
 // ==========================================
-// 8. DAFTAR SPK — [V3.7 FIX BUG 1]
+// 8. DAFTAR SPK — [V3.7.1 FIX BUG 1]
 // ==========================================
 const spkJenisPkt = document.getElementById('spk-jenis-pkt');
 const btnTambahPkt = document.getElementById('btn-tambah-pkt');
@@ -420,19 +443,22 @@ if (spkAmanah) {
 
 if (spkJenisPkt) {
     spkJenisPkt.addEventListener('change', (e) => {
+        // [V3.7.1 FIX BUG 1] Untuk KEDUA-DUA pilihan, clear dan jana semula
+        // row pertama supaya event listener sentiasa terpasang dengan betul
+        containerBarisPkt.innerHTML = '';
+        tambahBarisPkt(false);
+
         if (e.target.value === 'PELBAGAI') {
             btnTambahPkt.classList.remove('skrin-sembunyi');
         } else {
             btnTambahPkt.classList.add('skrin-sembunyi');
-            containerBarisPkt.innerHTML = '';
-            tambahBarisPkt(false); // Jana semula row pertama
         }
         kiraTotalSPK();
     });
 }
 
-// [V3.7 FIX BUG 1] Fungsi ini kini dipanggil pada DOMContentLoaded
-// Row pertama dijana oleh JS (bukan hardcode HTML) supaya event listener terpasang
+// [V3.7 FIX BUG 1] Row pertama dijana oleh JS (bukan hardcode HTML)
+// supaya event listener terpasang dari DOMContentLoaded
 function tambahBarisPkt(bolehBuang = true) {
     const div = document.createElement('div');
     div.className = 'baris-pkt-item';
@@ -448,12 +474,14 @@ function tambahBarisPkt(bolehBuang = true) {
     const inputH = div.querySelector('.input-pkt-harga');
     const inputJ = div.querySelector('.input-pkt-jumlah');
     const kiraRow = () => {
-        inputJ.value = ((parseFloat(inputK.value)||0) * (parseFloat(inputH.value)||0)).toFixed(2);
+        inputJ.value = ((parseFloat(inputK.value) || 0) * (parseFloat(inputH.value) || 0)).toFixed(2);
         kiraTotalSPK();
     };
     inputK.addEventListener('input', kiraRow);
     inputH.addEventListener('input', kiraRow);
-    if (bolehBuang) div.querySelector('.btn-buang-pkt').addEventListener('click', () => { div.remove(); kiraTotalSPK(); });
+    if (bolehBuang) {
+        div.querySelector('.btn-buang-pkt').addEventListener('click', () => { div.remove(); kiraTotalSPK(); });
+    }
     containerBarisPkt.appendChild(div);
 }
 
@@ -485,11 +513,16 @@ if (borangDaftarSPK) {
             });
         });
         const respons = await panggilAPI('createSPK', {
-            no_spk: document.getElementById('spk-no').value, no_po: document.getElementById('spk-po').value,
-            nama_kontrak: document.getElementById('spk-nama').value, alamat_kontrak: document.getElementById('spk-alamat').value,
-            no_vendor: document.getElementById('spk-vendor').value, blok: document.getElementById('spk-blok').value,
-            jenis_kerja: document.getElementById('spk-jenis').value, mode: document.getElementById('spk-mode').value,
-            unit: document.getElementById('spk-unit').value, senarai_pkt_data: pktArr,
+            no_spk: document.getElementById('spk-no').value,
+            no_po: document.getElementById('spk-po').value,
+            nama_kontrak: document.getElementById('spk-nama').value,
+            alamat_kontrak: document.getElementById('spk-alamat').value,
+            no_vendor: document.getElementById('spk-vendor').value,
+            blok: document.getElementById('spk-blok').value,
+            jenis_kerja: document.getElementById('spk-jenis').value,
+            mode: document.getElementById('spk-mode').value,
+            unit: document.getElementById('spk-unit').value,
+            senarai_pkt_data: pktArr,
             kuantiti_total: document.getElementById('spk-kuantiti-total').value,
             nilai_total: document.getElementById('spk-nilai-total').value,
             ada_tahanan: document.getElementById('spk-tahanan').value,
@@ -504,8 +537,12 @@ if (borangDaftarSPK) {
         });
         btn.textContent = "Daftar SPK Induk"; btn.disabled = false;
         if (respons && respons.status) {
-            Swal.fire('Pendaftaran SPK Berjaya', respons.message, 'success')
-            .then(() => { borangDaftarSPK.reset(); containerBarisPkt.innerHTML = ''; tambahBarisPkt(false); bukaModul('utama'); });
+            Swal.fire('Pendaftaran SPK Berjaya', respons.message, 'success').then(() => {
+                borangDaftarSPK.reset();
+                containerBarisPkt.innerHTML = '';
+                tambahBarisPkt(false);
+                bukaModul('utama');
+            });
         } else {
             Swal.fire('Ralat', respons.message, 'error');
         }
@@ -531,7 +568,9 @@ function kiraNetPayable() {
     document.getElementById('paparan-net-payable').textContent = `RM ${(totalKasar - wa - wt - denda).toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
 }
 
-['bayaran-wa', 'bayaran-wt', 'bayaran-denda'].forEach(id => { document.getElementById(id)?.addEventListener('input', kiraNetPayable); });
+['bayaran-wa', 'bayaran-wt', 'bayaran-denda'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', kiraNetPayable);
+});
 
 const btnTarikBayaran = document.getElementById('btn-tarik-bayaran');
 if (btnTarikBayaran) {
@@ -585,10 +624,13 @@ if (btnTarikBayaran) {
             document.getElementById('bayaran-wt').value = 0;
             document.getElementById('bayaran-denda').value = 0;
             document.getElementById('bayaran-catatan-denda').value = "";
+
             if (d.cara_bayaran === "Potong Sijil Bayaran") {
-                hintWa.textContent = "(SPK ini didaftarkan untuk pemotongan WA)"; hintWa.style.color = "var(--success)";
+                hintWa.textContent = "(SPK ini didaftarkan untuk pemotongan WA)";
+                hintWa.style.color = "var(--success)";
             } else {
-                hintWa.textContent = `(SPK ini menggunakan ${d.cara_bayaran || 'Tiada'}, abaikan jika tiada potongan)`; hintWa.style.color = "var(--warning)";
+                hintWa.textContent = `(SPK ini menggunakan ${d.cara_bayaran || 'Tiada'}, abaikan jika tiada potongan)`;
+                hintWa.style.color = "var(--warning)";
             }
             kiraNetPayable();
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
@@ -618,7 +660,8 @@ if (borangBayaran) {
             });
         });
         if (totalKuantitiDiisi <= 0) return Swal.fire('Perhatian', 'Sila masukkan kuantiti disiapkan sekurang-kurangnya untuk satu PKT/Kerja.', 'warning');
-        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Menyimpan..."; btn.disabled = true;
+        const btn = e.target.querySelector('button');
+        btn.textContent = "Sedang Menyimpan..."; btn.disabled = true;
         const respons = await panggilAPI('addPayment', {
             no_spk: document.getElementById('bayaran-no-spk').value,
             no_po: document.getElementById('bayaran-no-po').value,
@@ -632,7 +675,11 @@ if (borangBayaran) {
         btn.textContent = "Simpan Sijil Bayaran"; btn.disabled = false;
         if (respons && respons.status) {
             Swal.fire('Berjaya', respons.message + `\nBaki Kuantiti Terkini: ${respons.data.baki_terkini}`, respons.data.amaran_dihantar ? 'warning' : 'success')
-            .then(() => { borangBayaran.reset(); document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi'); document.getElementById('paparan-net-payable').textContent = "RM 0.00"; });
+            .then(() => {
+                borangBayaran.reset();
+                document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi');
+                document.getElementById('paparan-net-payable').textContent = "RM 0.00";
+            });
         } else {
             Swal.fire('Ralat', respons.message, 'error');
         }
@@ -640,10 +687,10 @@ if (borangBayaran) {
 }
 
 // ==========================================
-// 10. MOHON VO — [V3.7 FIX BUG 2]
+// 10. MOHON VO — [V3.7.1 FIX BUG 2]
 // ==========================================
 
-// Helper kira jumlah nilai VO untuk pelbagai PKT
+// Helper: Auto-kira nilai setiap baris PKT VO dan jumlah keseluruhan
 function kiraJumlahVO() {
     let totalNilai = 0;
     document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
@@ -653,7 +700,8 @@ function kiraJumlahVO() {
         tr.querySelector('.vo-pkt-nilai').value = nilai.toFixed(2);
         totalNilai += nilai;
     });
-    document.getElementById('paparan-jumlah-vo').textContent = `RM ${totalNilai.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
+    const el = document.getElementById('paparan-jumlah-vo');
+    if (el) el.textContent = `RM ${totalNilai.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
 }
 
 const btnTarikVo = document.getElementById('btn-tarik-vo');
@@ -676,9 +724,9 @@ if (btnTarikVo) {
             const kotakVoKuantiti = document.getElementById('kotak-vo-kuantiti');
             const kotakVoNilai = document.getElementById('kotak-vo-nilai');
 
-            // [V3.7 BUG 2] Semak bilangan PKT
-            if (d.senarai_pkt && d.senarai_pkt.length > 1) {
-                // SPK Pelbagai PKT — papar jadual
+            // [V3.7.1 FIX BUG 2] Tunjuk jadual PKT untuk SEMUA kes
+            // Konsisten dengan sijil bayaran — tiada conditional length
+            if (d.senarai_pkt && d.senarai_pkt.length > 0) {
                 kawasanPktVO.classList.remove('skrin-sembunyi');
                 kotakVoKuantiti.classList.add('skrin-sembunyi');
                 kotakVoNilai.classList.add('skrin-sembunyi');
@@ -695,13 +743,13 @@ if (btnTarikVo) {
                         <td><input type="number" step="0.01" class="vo-pkt-nilai" value="0.00" readonly style="background:#e9ecef; border:none; font-weight:bold; color:var(--primary-color); width:100%;"></td>
                     `;
                     tbody.appendChild(tr);
-                    // Event listener untuk auto-kira
                     tr.querySelector('.vo-pkt-harga').addEventListener('input', kiraJumlahVO);
                     tr.querySelector('.vo-pkt-kuantiti').addEventListener('input', kiraJumlahVO);
                 });
+                kiraJumlahVO();
 
             } else {
-                // SPK 1 PKT — guna flow biasa
+                // Fallback jika tiada data PKT langsung dari DB
                 kawasanPktVO.classList.add('skrin-sembunyi');
                 kotakVoKuantiti.classList.remove('skrin-sembunyi');
                 kotakVoNilai.classList.remove('skrin-sembunyi');
@@ -710,48 +758,31 @@ if (btnTarikVo) {
             }
 
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data ditarik!', showConfirmButton: false, timer: 1500});
+
         } else {
             Swal.fire('Gagal', respons.message, 'error');
         }
     });
 }
 
+// [V3.7.1] voJenis hanya urus tarikh — kuantiti/nilai dikendalikan jadual PKT
 const voJenis = document.getElementById('vo-jenis');
 if (voJenis) {
     voJenis.addEventListener('change', (e) => {
         const val = e.target.value;
-        const kawasanPktVO = document.getElementById('kawasan-pkt-vo');
-        const adaPelbagai = !kawasanPktVO.classList.contains('skrin-sembunyi');
-
-        const kKuantiti = document.getElementById('kotak-vo-kuantiti');
-        const kNilai = document.getElementById('kotak-vo-nilai');
         const kMula = document.getElementById('kotak-vo-mula');
         const kTamat = document.getElementById('kotak-vo-tamat');
 
-        // Jika pelbagai PKT, kuantiti/nilai dikendalikan oleh jadual
-        // Hanya urus tarikh sahaja
-        if (adaPelbagai) {
-            kKuantiti.classList.add('skrin-sembunyi');
-            kNilai.classList.add('skrin-sembunyi');
-            if (val === 'Sambung Masa (EOT)' || val.includes('Masa')) {
-                kMula.classList.remove('skrin-sembunyi'); kTamat.classList.remove('skrin-sembunyi');
-            } else if (val === 'Tambahan Kuantiti') {
-                kMula.classList.add('skrin-sembunyi'); kTamat.classList.add('skrin-sembunyi');
-            } else {
-                kMula.classList.remove('skrin-sembunyi'); kTamat.classList.remove('skrin-sembunyi');
-            }
+        if (val === 'Tambahan Kuantiti') {
+            kMula.classList.add('skrin-sembunyi');
+            kTamat.classList.add('skrin-sembunyi');
+        } else if (val === 'Sambung Masa (EOT)') {
+            kMula.classList.remove('skrin-sembunyi');
+            kTamat.classList.remove('skrin-sembunyi');
         } else {
-            // 1 PKT — flow biasa
-            if (val === 'Tambahan Kuantiti') {
-                kKuantiti.classList.remove('skrin-sembunyi'); kNilai.classList.remove('skrin-sembunyi');
-                kMula.classList.add('skrin-sembunyi'); kTamat.classList.add('skrin-sembunyi');
-            } else if (val === 'Sambung Masa (EOT)') {
-                kKuantiti.classList.add('skrin-sembunyi'); kNilai.classList.add('skrin-sembunyi');
-                kMula.classList.remove('skrin-sembunyi'); kTamat.classList.remove('skrin-sembunyi');
-            } else {
-                kKuantiti.classList.remove('skrin-sembunyi'); kNilai.classList.remove('skrin-sembunyi');
-                kMula.classList.remove('skrin-sembunyi'); kTamat.classList.remove('skrin-sembunyi');
-            }
+            // Tambahan Kontrak (Kuantiti + Masa)
+            kMula.classList.remove('skrin-sembunyi');
+            kTamat.classList.remove('skrin-sembunyi');
         }
     });
 }
@@ -762,22 +793,21 @@ if (borangMohonVO) {
         e.preventDefault();
         if (!document.getElementById('vo-no-spk').value) return Swal.fire('Ralat', 'Sila tarik data SPK dahulu.', 'error');
 
-        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Menghantar..."; btn.disabled = true;
+        const btn = e.target.querySelector('button');
+        btn.textContent = "Sedang Menghantar..."; btn.disabled = true;
 
-        const kawasanPktVO = document.getElementById('kawasan-pkt-vo');
-        const adaPelbagai = !kawasanPktVO.classList.contains('skrin-sembunyi');
-
+        // [V3.7.1] Kumpul kuantiti dan nilai dari jadual PKT
         let kuantitiHantar = 0, nilaiHantar = 0;
+        document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
+            kuantitiHantar += parseFloat(tr.querySelector('.vo-pkt-kuantiti').value) || 0;
+            nilaiHantar += parseFloat(tr.querySelector('.vo-pkt-nilai').value) || 0;
+        });
 
-        if (adaPelbagai) {
-            // [V3.7 BUG 2] Kumpul data dari jadual PKT pelbagai
-            document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
-                kuantitiHantar += parseFloat(tr.querySelector('.vo-pkt-kuantiti').value) || 0;
-                nilaiHantar += parseFloat(tr.querySelector('.vo-pkt-nilai').value) || 0;
-            });
-        } else {
-            kuantitiHantar = parseFloat(document.getElementById('vo-kuantiti-mohon').value) || 0;
-            nilaiHantar = parseFloat(document.getElementById('vo-nilai-mohon').value) || 0;
+        // Validasi kuantiti (kecuali Sambung Masa sahaja)
+        const jenisVO = document.getElementById('vo-jenis').value;
+        if (jenisVO !== 'Sambung Masa (EOT)' && kuantitiHantar <= 0) {
+            btn.textContent = "Hantar Permohonan VO"; btn.disabled = false;
+            return Swal.fire('Perhatian', 'Sila masukkan kuantiti tambahan sekurang-kurangnya untuk satu PKT/Kerja.', 'warning');
         }
 
         const respons = await panggilAPI('mohonVO', {
@@ -787,7 +817,7 @@ if (borangMohonVO) {
             nilai_kontrak_semasa: document.getElementById('vo-nilai-semasa').value,
             kuantiti_dipohon: kuantitiHantar,
             nilai_kuantiti_dipohon: nilaiHantar,
-            jenis_vo: document.getElementById('vo-jenis').value,
+            jenis_vo: jenisVO,
             tarikh_mula_baru: document.getElementById('vo-mula-baru').value,
             tarikh_tamat_baru: document.getElementById('vo-tamat-baru').value,
             dikunci_oleh: JSON.parse(sessionStorage.getItem('spk_user')).username
@@ -798,9 +828,14 @@ if (borangMohonVO) {
         if (respons && respons.status) {
             Swal.fire('Permohonan Dihantar', respons.message, 'success').then(() => {
                 borangMohonVO.reset();
+                // Reset kawasan VO ke keadaan asal
                 document.getElementById('kawasan-pkt-vo').classList.add('skrin-sembunyi');
                 document.getElementById('kotak-vo-kuantiti').classList.remove('skrin-sembunyi');
                 document.getElementById('kotak-vo-nilai').classList.remove('skrin-sembunyi');
+                document.getElementById('kotak-vo-mula').classList.add('skrin-sembunyi');
+                document.getElementById('kotak-vo-tamat').classList.add('skrin-sembunyi');
+                const el = document.getElementById('paparan-jumlah-vo');
+                if (el) el.textContent = 'RM 0.00';
                 bukaModul('utama');
             });
         } else {
@@ -845,7 +880,8 @@ if (borangMohonTamat) {
     borangMohonTamat.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!document.getElementById('tamat-no-spk').value) return Swal.fire('Ralat', 'Sila tarik data SPK dahulu.', 'error');
-        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Memohon..."; btn.disabled = true;
+        const btn = e.target.querySelector('button');
+        btn.textContent = "Sedang Memohon..."; btn.disabled = true;
         const respons = await panggilAPI('mohonTamat', {
             no_spk: document.getElementById('tamat-no-spk').value,
             no_po: document.getElementById('tamat-no-po').value,
@@ -864,7 +900,7 @@ if (borangMohonTamat) {
 }
 
 // ==========================================
-// 12. NOTIFIKASI & KELULUSAN
+// 12. NOTIFIKASI & KELULUSAN VO/TAMAT
 // ==========================================
 async function semakNotifikasi(user) {
     if (!user) return;
@@ -874,13 +910,18 @@ async function semakNotifikasi(user) {
     let kiraTugas = 0;
 
     if (resVO && resVO.status && resVO.data) {
-        let tasksVO = resVO.data.filter(i => (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')).length;
+        let tasksVO = resVO.data.filter(i =>
+            (role === 'AFC' && i.status_afc === 'PENDING') ||
+            (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')
+        ).length;
         kiraTugas += tasksVO;
         const contVO = document.getElementById('senarai-vo-container');
         if (contVO) {
             contVO.innerHTML = resVO.data.length ? resVO.data.map(i => {
-                const boleh = (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING');
-                const bdg = (i.status_afc==='BATAL'||i.status_fc==='BATAL') ? 'badge-batal' : ((i.status_afc==='LULUS'&&i.status_fc==='LULUS') ? 'badge-lulus' : 'badge-pending');
+                const boleh = (role === 'AFC' && i.status_afc === 'PENDING') ||
+                              (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING');
+                const bdg = (i.status_afc==='BATAL'||i.status_fc==='BATAL') ? 'badge-batal' :
+                            ((i.status_afc==='LULUS'&&i.status_fc==='LULUS') ? 'badge-lulus' : 'badge-pending');
                 let htmlCard = `<div class="kad-vo"><div class="kad-header"><span class="kad-spk">${i.no_spk}</span><span class="badge-status ${bdg}">AFC: ${i.status_afc} | FC: ${i.status_fc}</span></div><div class="kad-body"><p><strong>Jenis:</strong> ${i.jenis_vo}</p><p><strong>Tarikh Mohon:</strong> ${new Date(i.tarikh).toLocaleDateString('ms-MY')}</p><p><strong>Pemohon:</strong> ${i.pemohon}</p>`;
                 if (i.jenis_vo.includes('Masa')) htmlCard += `<p><strong>Tarikh Tamat Baharu:</strong> ${i.tarikh_tamat_baru}</p>`;
                 else if (i.jenis_vo.includes('Kontrak')) htmlCard += `<p><strong>Kuantiti Dipohon:</strong> ${i.kuantiti_dipohon}</p><p><strong>Nilai (RM):</strong> ${i.nilai_dipohon}</p><p><strong>Tarikh Tamat Baharu:</strong> ${i.tarikh_tamat_baru}</p>`;
@@ -895,13 +936,18 @@ async function semakNotifikasi(user) {
     }
 
     if (resTamat && resTamat.status && resTamat.data) {
-        let tasksTamat = resTamat.data.filter(i => (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')).length;
+        let tasksTamat = resTamat.data.filter(i =>
+            (role === 'AFC' && i.status_afc === 'PENDING') ||
+            (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING')
+        ).length;
         kiraTugas += tasksTamat;
         const contTamat = document.getElementById('senarai-tamat-container');
         if (contTamat) {
             contTamat.innerHTML = resTamat.data.length ? resTamat.data.map(i => {
-                const boleh = (role === 'AFC' && i.status_afc === 'PENDING') || (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING');
-                const bdg = (i.status_afc==='BATAL'||i.status_fc==='BATAL') ? 'badge-batal' : ((i.status_afc==='LULUS'&&i.status_fc==='LULUS') ? 'badge-lulus' : 'badge-pending');
+                const boleh = (role === 'AFC' && i.status_afc === 'PENDING') ||
+                              (role === 'FC' && i.status_afc === 'LULUS' && i.status_fc === 'PENDING');
+                const bdg = (i.status_afc==='BATAL'||i.status_fc==='BATAL') ? 'badge-batal' :
+                            ((i.status_afc==='LULUS'&&i.status_fc==='LULUS') ? 'badge-lulus' : 'badge-pending');
                 let htmlCard = `<div class="kad-vo" style="border-left-color:#ef4444;"><div class="kad-header"><span class="kad-spk">${i.no_spk}</span><span class="badge-status ${bdg}">AFC: ${i.status_afc} | FC: ${i.status_fc}</span></div><div class="kad-body"><p><strong>Tarikh Mohon:</strong> ${new Date(i.tarikh_mohon).toLocaleDateString('ms-MY')}</p><p><strong>Pemohon:</strong> ${i.pemohon}</p><p><strong>Deposit Tahanan (RM):</strong> ${i.wang_tahanan}</p><p><strong>Deposit Amanah (RM):</strong> ${i.wang_amanah}</p>`;
                 if (i.catatan) htmlCard += `<p style="color:var(--danger); margin-top:8px;"><strong>Sebab Tolak:</strong> ${i.catatan}</p>`;
                 htmlCard += `</div>`;
@@ -929,7 +975,10 @@ window.prosesTindakan = function(noSpk, jenisModul, tindakan, catatan = "") {
 async function laksanakanTindakan(noSpk, jenisModul, tindakan, catatan) {
     const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
     const apiName = jenisModul === 'VO' ? 'updateVO' : 'prosesTamat';
-    const respons = await panggilAPI(apiName, { no_spk: noSpk, role: userSesi.role.toUpperCase(), tindakan: tindakan, catatan: catatan });
+    const respons = await panggilAPI(apiName, {
+        no_spk: noSpk, role: userSesi.role.toUpperCase(),
+        tindakan: tindakan, catatan: catatan
+    });
     if (respons && respons.status) {
         Swal.fire('Selesai', respons.message, 'success');
         document.getElementById('modal-tolak').classList.add('skrin-sembunyi');
@@ -946,6 +995,7 @@ window.bukaModalTolak = function(noSpk, jenisModul) {
     document.getElementById('tolak-catatan').value = "";
     document.getElementById('modal-tolak').classList.remove('skrin-sembunyi');
 };
+
 document.getElementById('btn-batal-tolak')?.addEventListener('click', () => document.getElementById('modal-tolak').classList.add('skrin-sembunyi'));
 document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     const catatan = document.getElementById('tolak-catatan').value;
@@ -968,7 +1018,8 @@ if (borangProfil) {
                 return Swal.fire('Maklumat Tidak Lengkap', 'Sila masukkan Kata Laluan Semasa (Lama) untuk menukar kata laluan.', 'warning');
             }
         }
-        const btn = e.target.querySelector('button'); btn.textContent = "Menyimpan..."; btn.disabled = true;
+        const btn = e.target.querySelector('button');
+        btn.textContent = "Menyimpan..."; btn.disabled = true;
         const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
         const respons = await panggilAPI('updateProfile', {
             id_user: userSesi.id_user,
@@ -1004,7 +1055,10 @@ async function semakBadgePendingAkaun(user) {
     const respons = await panggilAPI('getSenaraiPending', { role: user.role.toUpperCase() });
     if (respons && respons.status) {
         const badge = document.getElementById('badge-pending-akaun');
-        if (badge) { badge.textContent = respons.jumlah; badge.classList.toggle('sembunyi', respons.jumlah === 0); }
+        if (badge) {
+            badge.textContent = respons.jumlah;
+            badge.classList.toggle('sembunyi', respons.jumlah === 0);
+        }
     }
 }
 
@@ -1017,7 +1071,12 @@ async function muatSenaraiPendingAkaun() {
     const respons = await panggilAPI('getSenaraiPending', { role: userSesi.role.toUpperCase() });
     if (respons && respons.status) {
         if (respons.data.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-pudar);"><i class="fas fa-check-circle" style="font-size:50px; color:var(--success); margin-bottom:15px;"></i><h3 style="margin-bottom:8px;">Tiada Permohonan Baharu</h3><p>Semua permohonan akaun telah diproses.</p></div>`;
+            container.innerHTML = `
+                <div style="text-align:center; padding: 40px; color:var(--text-pudar);">
+                    <i class="fas fa-check-circle" style="font-size:50px; color:var(--success); margin-bottom:15px;"></i>
+                    <h3 style="margin-bottom:8px;">Tiada Permohonan Baharu</h3>
+                    <p>Semua permohonan akaun telah diproses.</p>
+                </div>`;
         } else {
             container.innerHTML = respons.data.map(user => `
                 <div class="kad-vo" style="border-left-color: #8b5cf6;">
@@ -1030,13 +1089,20 @@ async function muatSenaraiPendingAkaun() {
                         <p><strong>Tarikh Mohon:</strong> ${new Date(user.tarikh_daftar).toLocaleDateString('ms-MY', {day:'numeric', month:'long', year:'numeric'})}</p>
                     </div>
                     <div class="kad-actions">
-                        <button class="btn-hijau" onclick="window.prosesAkaun('${user.id_user}', '${user.username}', 'AKTIF')"><i class="fas fa-check"></i> Aktifkan</button>
-                        <button class="btn-danger" onclick="window.bukaTolakAkaun('${user.id_user}', '${user.username}')"><i class="fas fa-times"></i> Tolak</button>
+                        <button class="btn-hijau" onclick="window.prosesAkaun('${user.id_user}', '${user.username}', 'AKTIF')">
+                            <i class="fas fa-check"></i> Aktifkan
+                        </button>
+                        <button class="btn-danger" onclick="window.bukaTolakAkaun('${user.id_user}', '${user.username}')">
+                            <i class="fas fa-times"></i> Tolak
+                        </button>
                     </div>
                 </div>`).join('');
         }
         const badge = document.getElementById('badge-pending-akaun');
-        if (badge) { badge.textContent = respons.jumlah; badge.classList.toggle('sembunyi', respons.jumlah === 0); }
+        if (badge) {
+            badge.textContent = respons.jumlah;
+            badge.classList.toggle('sembunyi', respons.jumlah === 0);
+        }
     } else {
         container.innerHTML = `<p style="text-align:center; color:var(--danger);">Gagal memuatkan data. Sila cuba lagi.</p>`;
     }
@@ -1044,10 +1110,19 @@ async function muatSenaraiPendingAkaun() {
 
 window.prosesAkaun = function(idUser, username, tindakan) {
     const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
-    Swal.fire({ title: `Aktifkan akaun "${username}"?`, text: `Pengguna akan menerima notifikasi e-mel dan boleh log masuk selepas ini.`, icon: 'question', showCancelButton: true, confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Aktifkan', cancelButtonText: 'Batal' })
-    .then(async (result) => {
+    Swal.fire({
+        title: `Aktifkan akaun "${username}"?`,
+        text: `Pengguna akan menerima notifikasi e-mel dan boleh log masuk selepas ini.`,
+        icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Aktifkan', cancelButtonText: 'Batal'
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const respons = await panggilAPI('aktifkanAkaun', { id_user: idUser, tindakan: 'AKTIF', role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
+            const respons = await panggilAPI('aktifkanAkaun', {
+                id_user: idUser, tindakan: 'AKTIF',
+                role: userSesi.role.toUpperCase(),
+                admin_username: userSesi.username,
+                admin_email: userSesi.email
+            });
             if (respons && respons.status) {
                 Swal.fire('Berjaya!', respons.message, 'success').then(() => muatSenaraiPendingAkaun());
             } else {
@@ -1064,14 +1139,20 @@ window.bukaTolakAkaun = function(idUser, username) {
     document.getElementById('modal-tolak-akaun').classList.remove('skrin-sembunyi');
 };
 
-document.getElementById('btn-batal-tolak-akaun')?.addEventListener('click', () => document.getElementById('modal-tolak-akaun').classList.add('skrin-sembunyi'));
+document.getElementById('btn-batal-tolak-akaun')?.addEventListener('click', () => {
+    document.getElementById('modal-tolak-akaun').classList.add('skrin-sembunyi');
+});
 
 document.getElementById('btn-sahkan-tolak-akaun')?.addEventListener('click', async () => {
     const idUser = document.getElementById('tolak-akaun-id').value;
-    const username = document.getElementById('tolak-akaun-username').value;
     const sebab = document.getElementById('tolak-akaun-sebab').value.trim();
     const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
-    const respons = await panggilAPI('aktifkanAkaun', { id_user: idUser, tindakan: 'TOLAK', sebab: sebab, role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
+    const respons = await panggilAPI('aktifkanAkaun', {
+        id_user: idUser, tindakan: 'TOLAK', sebab: sebab,
+        role: userSesi.role.toUpperCase(),
+        admin_username: userSesi.username,
+        admin_email: userSesi.email
+    });
     document.getElementById('modal-tolak-akaun').classList.add('skrin-sembunyi');
     if (respons && respons.status) {
         Swal.fire('Selesai', respons.message, 'success').then(() => muatSenaraiPendingAkaun());
