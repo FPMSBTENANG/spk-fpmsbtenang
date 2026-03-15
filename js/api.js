@@ -1,16 +1,8 @@
-// Fail: js/api.js
-// Jambatan Komunikasi PWA ↔ Google Apps Script
-// Versi: V3.6 Patch (Fix: resetPassword dikecualikan dari semakan token)
-
-const API_URL = "https://script.google.com/macros/s/AKfycbzNNevb1kwRgKviL8b2u-cJluU2Bm-qn-DNrYAMEByAItIAdN1xBdP0TnRQXXvITuBd/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxe_rmCrDfjw93AxBJoZt-AGCGyfCL9-430pboq0yMzJTciVlh0-g50kbTcKkCpbyJw/exec"; 
 
 async function panggilAPI(action, data = {}) {
     
     const sesiUser = JSON.parse(sessionStorage.getItem('spk_user'));
-
-    // Senarai action yang TIDAK perlukan token (user belum/tidak login)
-    // [V3.6 FIX] - Tambah 'resetPassword' supaya borang lupa kata laluan
-    //              tidak kena "Akses Ditolak" semasa user belum login
     const publicActions = ['login', 'register', 'resetPassword'];
 
     if (!publicActions.includes(action)) {
