@@ -1,3 +1,9 @@
+// Fail: js/app.js
+// Versi: V4.0
+
+// ==========================================
+// 1. PEMBOLEH UBAH DOM
+// ==========================================
 const skrinLogin = document.getElementById('skrin-login');
 const skrinDashboard = document.getElementById('skrin-dashboard');
 const borangLogin = document.getElementById('borang-login');
@@ -10,15 +16,16 @@ const paparanNama = document.getElementById('paparan-nama');
 const paparanRole = document.getElementById('paparan-role');
 const badgeNotifikasi = document.getElementById('badge-notifikasi');
 let grafDashboard = null;
+let resetEmail = "";
 
+// ==========================================
+// 2. JAM REAL-TIME & AWALAN
+// ==========================================
 function kemaskiniJam() {
     const elJam = document.getElementById('paparan-jam');
     if (elJam) {
         const masa = new Date();
-        const tetapan = {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
-        };
+        const tetapan = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         elJam.textContent = masa.toLocaleDateString('ms-MY', tetapan);
     }
 }
@@ -27,7 +34,6 @@ kemaskiniJam();
 
 document.addEventListener('DOMContentLoaded', () => {
     tambahBarisPkt(false);
-
     const sesiUser = sessionStorage.getItem('spk_user');
     if (sesiUser) {
         binaDashboard(JSON.parse(sesiUser));
@@ -42,6 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ==========================================
+// 3. TEMA & MATA PASSWORD
+// ==========================================
 const btnTema = document.getElementById('btn-tema');
 const ikonTema = btnTema ? btnTema.querySelector('i') : null;
 
@@ -74,6 +83,48 @@ if (togglePassword && inputPassword) {
     });
 }
 
+// ==========================================
+// 4. PASSWORD POLICY VALIDATION [V4.0]
+// ==========================================
+function validatePasswordPolicy(password) {
+    if (!password || password.length < 6) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    if (!/[^A-Za-z0-9]/.test(password)) return false;
+    return true;
+}
+
+function kemaskiniHintPassword(password) {
+    const checks = {
+        'hint-daftar-panjang': password.length >= 6,
+        'hint-daftar-besar': /[A-Z]/.test(password),
+        'hint-daftar-kecil': /[a-z]/.test(password),
+        'hint-daftar-nombor': /[0-9]/.test(password),
+        'hint-daftar-simbol': /[^A-Za-z0-9]/.test(password)
+    };
+    Object.entries(checks).forEach(([id, lulus]) => {
+        const el = document.getElementById(id);
+        if (el) el.style.color = lulus ? 'var(--success)' : 'var(--text-pudar)';
+    });
+}
+
+const inputDaftarPassword = document.getElementById('daftar-password');
+if (inputDaftarPassword) {
+    inputDaftarPassword.addEventListener('input', () => kemaskiniHintPassword(inputDaftarPassword.value));
+}
+
+const inputProfilPassword = document.getElementById('profil-password');
+if (inputProfilPassword) {
+    inputProfilPassword.addEventListener('input', () => {
+        const hint = document.getElementById('hint-profil-password');
+        if (hint) hint.classList.toggle('skrin-sembunyi', inputProfilPassword.value.trim() === '');
+    });
+}
+
+// ==========================================
+// 5. NAVIGASI BORANG LOGIN
+// ==========================================
 function tunjukBorangLogin() {
     borangLogin.classList.remove('skrin-sembunyi');
     borangDaftar.classList.add('skrin-sembunyi');
@@ -91,6 +142,10 @@ function tunjukBorangLupaPassword() {
     borangDaftar.classList.add('skrin-sembunyi');
     borangLupaPassword.classList.remove('skrin-sembunyi');
     document.getElementById('teks-tukar-daftar').classList.add('skrin-sembunyi');
+    document.getElementById('lupa-step-1').classList.remove('skrin-sembunyi');
+    document.getElementById('lupa-step-2').classList.add('skrin-sembunyi');
+    document.getElementById('mesej-lupa').textContent = '';
+    resetEmail = "";
 }
 
 const linkDaftar = document.getElementById('link-daftar');
@@ -103,15 +158,31 @@ if (linkLogin) linkLogin.addEventListener('click', (e) => { e.preventDefault(); 
 if (linkLupaPassword) linkLupaPassword.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLupaPassword(); });
 if (linkKembaliLogin) linkKembaliLogin.addEventListener('click', (e) => { e.preventDefault(); tunjukBorangLogin(); });
 
+// ==========================================
+// 6. AUTENTIKASI
+// ==========================================
+
+// --- Borang Daftar [V4.0: +password fields + validation] ---
 if (borangDaftar) {
     borangDaftar.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const password = document.getElementById('daftar-password').value;
+        const passwordSahkan = document.getElementById('daftar-password-sahkan').value;
+
+        if (!validatePasswordPolicy(password)) {
+            return Swal.fire('Kata Laluan Tidak Sah', 'Kata laluan mesti sekurang-kurangnya 6 aksara dan mengandungi huruf besar, huruf kecil, nombor, dan simbol.', 'warning');
+        }
+        if (password !== passwordSahkan) {
+            return Swal.fire('Kata Laluan Tidak Sepadan', 'Kata laluan dan pengesahan kata laluan tidak sama.', 'warning');
+        }
+
         const btn = document.getElementById('btn-daftar');
         btn.textContent = "Sila Tunggu..."; btn.disabled = true;
         const respons = await panggilAPI('register', {
             username: document.getElementById('daftar-username').value,
             email: document.getElementById('daftar-email').value,
-            role: document.getElementById('daftar-role').value
+            role: document.getElementById('daftar-role').value,
+            password: password
         });
         btn.textContent = "Daftar Akaun"; btn.disabled = false;
         if (respons && respons.status) {
@@ -123,6 +194,7 @@ if (borangDaftar) {
     });
 }
 
+// --- Borang Log Masuk ---
 if (borangLogin) {
     borangLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -141,11 +213,8 @@ if (borangLogin) {
             borangLogin.reset();
             binaDashboard(respons.data);
             if (respons.data.requirePasswordChange) {
-                Swal.fire({
-                    title: 'Perhatian Keselamatan!',
-                    text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.',
-                    icon: 'warning'
-                }).then(() => bukaModul('profil'));
+                Swal.fire({ title: 'Perhatian Keselamatan!', text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.', icon: 'warning' })
+                .then(() => bukaModul('profil'));
             }
         } else {
             Swal.fire('Gagal', respons ? respons.message : "Ralat pelayan.", 'error');
@@ -153,31 +222,81 @@ if (borangLogin) {
     });
 }
 
-if (borangLupaPassword) {
-    borangLupaPassword.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('btn-hantar-reset');
+// --- 2FA Lupa Kata Laluan [V4.0] ---
+const btnHantarPin = document.getElementById('btn-hantar-pin');
+if (btnHantarPin) {
+    btnHantarPin.addEventListener('click', async () => {
+        const email = document.getElementById('lupa-email').value.trim();
         const mesejEl = document.getElementById('mesej-lupa');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghantar...'; btn.disabled = true;
+        if (!email) { mesejEl.textContent = "Sila masukkan alamat e-mel."; return; }
+
+        btnHantarPin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghantar...'; btnHantarPin.disabled = true;
         mesejEl.textContent = "";
-        const respons = await panggilAPI('resetPassword', { email: document.getElementById('lupa-email').value.trim() });
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Hantar Kata Laluan Sementara'; btn.disabled = false;
+
+        const respons = await panggilAPI('requestResetPin', { email: email });
+        btnHantarPin.innerHTML = '<i class="fas fa-paper-plane"></i> Hantar PIN'; btnHantarPin.disabled = false;
+
         if (respons && respons.status) {
-            Swal.fire({ title: 'E-mel Dihantar!', text: respons.message, icon: 'success', confirmButtonColor: '#10b981' })
-            .then(() => { borangLupaPassword.reset(); tunjukBorangLogin(); });
+            resetEmail = email;
+            document.getElementById('lupa-step-1').classList.add('skrin-sembunyi');
+            document.getElementById('lupa-step-2').classList.remove('skrin-sembunyi');
+            document.getElementById('lupa-step2-hint').textContent = `PIN telah dihantar ke ${email}. Sah selama 15 minit.`;
+            document.getElementById('lupa-pin').value = '';
+            document.getElementById('lupa-password-baru').value = '';
+            document.getElementById('lupa-password-sahkan').value = '';
+            document.getElementById('mesej-step2').textContent = '';
         } else {
             mesejEl.textContent = respons ? respons.message : "Gagal berhubung dengan pelayan.";
         }
     });
 }
 
+const btnTetapkanPassword = document.getElementById('btn-tetapkan-password');
+if (btnTetapkanPassword) {
+    btnTetapkanPassword.addEventListener('click', async () => {
+        const pin = document.getElementById('lupa-pin').value.trim();
+        const passwordBaru = document.getElementById('lupa-password-baru').value;
+        const passwordSahkan = document.getElementById('lupa-password-sahkan').value;
+        const mesejEl = document.getElementById('mesej-step2');
+        mesejEl.textContent = "";
+
+        if (!pin || pin.length !== 4) { mesejEl.textContent = "Sila masukkan PIN 4 digit."; return; }
+        if (!validatePasswordPolicy(passwordBaru)) {
+            mesejEl.textContent = "Kata laluan mesti sekurang-kurangnya 6 aksara dan mengandungi huruf besar, huruf kecil, nombor, dan simbol."; return;
+        }
+        if (passwordBaru !== passwordSahkan) { mesejEl.textContent = "Kata laluan tidak sepadan."; return; }
+
+        btnTetapkanPassword.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengesahkan...'; btnTetapkanPassword.disabled = true;
+
+        const respons = await panggilAPI('verifyResetPin', { email: resetEmail, pin: pin, new_password: passwordBaru });
+        btnTetapkanPassword.innerHTML = '<i class="fas fa-check-circle"></i> Tetapkan Kata Laluan'; btnTetapkanPassword.disabled = false;
+
+        if (respons && respons.status) {
+            Swal.fire({ title: 'Berjaya!', text: respons.message, icon: 'success', confirmButtonColor: '#10b981' })
+            .then(() => { borangLupaPassword.reset(); tunjukBorangLogin(); resetEmail = ""; });
+        } else {
+            mesejEl.textContent = respons ? respons.message : "Gagal berhubung dengan pelayan.";
+        }
+    });
+}
+
+const linkHantarSemula = document.getElementById('link-hantar-semula');
+if (linkHantarSemula) {
+    linkHantarSemula.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('lupa-step-2').classList.add('skrin-sembunyi');
+        document.getElementById('lupa-step-1').classList.remove('skrin-sembunyi');
+        document.getElementById('mesej-lupa').textContent = '';
+        resetEmail = "";
+    });
+}
+
+// --- Logout ---
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', () => {
-        Swal.fire({
-            title: 'Log Keluar?', icon: 'question',
-            showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya'
-        }).then(async (r) => {
+        Swal.fire({ title: 'Log Keluar?', icon: 'question', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya' })
+        .then(async (r) => {
             if (r.isConfirmed) {
                 try { await panggilAPI('logout', {}); } catch (err) { console.warn("Gagal hubungi server semasa logout.", err); }
                 sessionStorage.removeItem('spk_user');
@@ -187,6 +306,9 @@ if (btnLogout) {
     });
 }
 
+// ==========================================
+// 7. NAVIGASI MENU & BINA DASHBOARD
+// ==========================================
 function binaDashboard(user) {
     skrinLogin.classList.replace('skrin-aktif', 'skrin-sembunyi');
     skrinDashboard.classList.replace('skrin-sembunyi', 'skrin-aktif');
@@ -245,10 +367,14 @@ if (btnMenu) {
     });
 }
 
+// ==========================================
+// 8. DASHBOARD GRAF [V4.0: +total_tamat]
+// ==========================================
 async function tarikDataDashboard() {
     const respons = await panggilAPI('getDashboardData', {});
     if (respons && respons.status) {
         document.getElementById('stat-spk').textContent = respons.data.total_spk;
+        document.getElementById('stat-tamat').textContent = respons.data.total_tamat || 0;
         document.getElementById('stat-bayaran').textContent = `RM ${respons.data.jumlah_bayaran.toLocaleString('ms-MY', {minimumFractionDigits: 2})}`;
         document.getElementById('stat-vo-lulus').textContent = respons.data.vo_lulus;
         document.getElementById('stat-vo-pending').textContent = respons.data.vo_pending;
@@ -258,11 +384,11 @@ async function tarikDataDashboard() {
         grafDashboard = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['SPK Aktif', 'VO Lulus', 'VO Tertunggak'],
+                labels: ['SPK Aktif', 'SPK Selesai', 'VO Lulus', 'VO Tertunggak'],
                 datasets: [{
                     label: 'Statistik Data',
-                    data: [respons.data.total_spk, respons.data.vo_lulus, respons.data.vo_pending],
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                    data: [respons.data.total_spk, respons.data.total_tamat || 0, respons.data.vo_lulus, respons.data.vo_pending],
+                    backgroundColor: ['#3b82f6', '#475569', '#10b981', '#f59e0b'],
                     borderRadius: 8
                 }]
             },
@@ -271,6 +397,9 @@ async function tarikDataDashboard() {
     }
 }
 
+// ==========================================
+// 9. CARIAN UNIVERSAL SPK
+// ==========================================
 const btnCarian = document.getElementById('btn-carian');
 if (btnCarian) {
     btnCarian.addEventListener('click', async () => {
@@ -331,11 +460,9 @@ if (btnCarian) {
             if (d.detail_pkt && d.detail_pkt.length > 0) {
                 seksyenDetailPkt.classList.remove('skrin-sembunyi');
                 document.getElementById('hasil-jadual-pkt').innerHTML = d.detail_pkt.map(p => `
-                    <tr>
-                        <td>${p.kod_pkt}</td><td>${p.kuantiti}</td>
-                        <td>RM ${parseFloat(p.harga_seunit).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
-                        <td>RM ${parseFloat(p.jumlah_rm).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
-                    </tr>`).join('');
+                    <tr><td>${p.kod_pkt}</td><td>${p.kuantiti}</td>
+                    <td>RM ${parseFloat(p.harga_seunit).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td>
+                    <td>RM ${parseFloat(p.jumlah_rm).toLocaleString('ms-MY', {minimumFractionDigits: 2})}</td></tr>`).join('');
             } else {
                 seksyenDetailPkt.classList.add('skrin-sembunyi');
             }
@@ -354,11 +481,9 @@ if (btnCarian) {
             document.getElementById('hasil-jadual-bayaran').innerHTML = htmlBayar || `<tr><td colspan="7" style="text-align:center;">Tiada sejarah bayaran</td></tr>`;
 
             const htmlVo = d.vo.map(v => `
-                <tr>
-                    <td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
-                    <td>${v.jenis_vo}</td><td>${v.kuantiti_dipohon}</td>
-                    <td>${v.status_afc}</td><td>${v.status_fc}</td>
-                </tr>`).join('');
+                <tr><td>${new Date(v.tarikh).toLocaleDateString('ms-MY')}</td>
+                <td>${v.jenis_vo}</td><td>${v.kuantiti_dipohon}</td>
+                <td>${v.status_afc}</td><td>${v.status_fc}</td></tr>`).join('');
             document.getElementById('hasil-jadual-vo').innerHTML = htmlVo || `<tr><td colspan="5" style="text-align:center;">Tiada sejarah VO</td></tr>`;
 
         } else {
@@ -394,6 +519,9 @@ if (borangAmanah) {
     });
 }
 
+// ==========================================
+// 10. DAFTAR SPK [V4.0: +validate PKT + validate tarikh]
+// ==========================================
 const spkJenisPkt = document.getElementById('spk-jenis-pkt');
 const btnTambahPkt = document.getElementById('btn-tambah-pkt');
 const containerBarisPkt = document.getElementById('container-baris-pkt');
@@ -411,7 +539,6 @@ if (spkJenisPkt) {
     spkJenisPkt.addEventListener('change', (e) => {
         containerBarisPkt.innerHTML = '';
         tambahBarisPkt(false);
-
         if (e.target.value === 'PELBAGAI') {
             btnTambahPkt.classList.remove('skrin-sembunyi');
         } else {
@@ -463,17 +590,34 @@ const borangDaftarSPK = document.getElementById('borang-daftar-spk');
 if (borangDaftarSPK) {
     borangDaftarSPK.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button');
-        btn.textContent = "Menyimpan..."; btn.disabled = true;
+
+        // [V4.0 C3] Validate PKT tidak kosong
         let pktArr = [];
+        let adaPktKosong = false;
         document.querySelectorAll('.baris-pkt-item').forEach(r => {
+            const noPkt = r.querySelector('.input-pkt-no').value.trim();
+            if (!noPkt) adaPktKosong = true;
             pktArr.push({
-                no_pkt: r.querySelector('.input-pkt-no').value,
+                no_pkt: noPkt,
                 kuantiti: r.querySelector('.input-pkt-kuantiti').value,
                 harga_seunit: r.querySelector('.input-pkt-harga').value,
                 jumlah_rm: r.querySelector('.input-pkt-jumlah').value
             });
         });
+        if (adaPktKosong) {
+            return Swal.fire('Maklumat Tidak Lengkap', 'Sila lengkapkan No. PKT / Kerja untuk semua baris.', 'warning');
+        }
+
+        // [V4.0 C4] Validate tarikh
+        const tarikhMula = document.getElementById('spk-mula').value;
+        const tarikhTamat = document.getElementById('spk-tamat').value;
+        if (tarikhMula && tarikhTamat && new Date(tarikhTamat) <= new Date(tarikhMula)) {
+            return Swal.fire('Tarikh Tidak Sah', 'Tarikh Tamat mestilah selepas Tarikh Mula.', 'warning');
+        }
+
+        const btn = e.target.querySelector('button');
+        btn.textContent = "Menyimpan..."; btn.disabled = true;
+
         const respons = await panggilAPI('createSPK', {
             no_spk: document.getElementById('spk-no').value,
             no_po: document.getElementById('spk-po').value,
@@ -493,8 +637,8 @@ if (borangDaftarSPK) {
             cara_bayaran: document.getElementById('spk-cara-bayaran')?.value || "",
             insuran: document.getElementById('spk-insuran').value,
             frequency_month: document.getElementById('spk-freq').value,
-            tarikh_mula: document.getElementById('spk-mula').value,
-            tarikh_tamat: document.getElementById('spk-tamat').value,
+            tarikh_mula: tarikhMula,
+            tarikh_tamat: tarikhTamat,
             created_by: JSON.parse(sessionStorage.getItem('spk_user')).email
         });
         btn.textContent = "Daftar SPK Induk"; btn.disabled = false;
@@ -511,6 +655,9 @@ if (borangDaftarSPK) {
     });
 }
 
+// ==========================================
+// 11. REKOD BAYARAN
+// ==========================================
 function kiraNetPayable() {
     let totalKasar = 0;
     document.querySelectorAll('.baris-kerja-bayaran').forEach(tr => {
@@ -542,14 +689,12 @@ if (btnTarikBayaran) {
 
         if (respons && respons.status) {
             const d = respons.data;
-
             if (d.spk_status !== 'ACTIVE') {
                 document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi');
                 return Swal.fire({
                     title: 'SPK Tidak Aktif',
                     html: `SPK <strong>${d.no_spk}</strong> berstatus <strong>"${d.spk_status}"</strong>.<br><br>Sijil Bayaran hanya boleh direkodkan untuk SPK yang masih <strong>AKTIF</strong>.`,
-                    icon: 'error',
-                    confirmButtonColor: '#ef4444'
+                    icon: 'error', confirmButtonColor: '#ef4444'
                 });
             }
 
@@ -592,7 +737,6 @@ if (btnTarikBayaran) {
             }
             kiraNetPayable();
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
-
         } else {
             Swal.fire('Gagal', respons.message, 'error');
             document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi');
@@ -618,8 +762,7 @@ if (borangBayaran) {
             });
         });
         if (totalKuantitiDiisi <= 0) return Swal.fire('Perhatian', 'Sila masukkan kuantiti disiapkan sekurang-kurangnya untuk satu PKT/Kerja.', 'warning');
-        const btn = e.target.querySelector('button');
-        btn.textContent = "Sedang Menyimpan..."; btn.disabled = true;
+        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Menyimpan..."; btn.disabled = true;
         const respons = await panggilAPI('addPayment', {
             no_spk: document.getElementById('bayaran-no-spk').value,
             no_po: document.getElementById('bayaran-no-po').value,
@@ -633,17 +776,16 @@ if (borangBayaran) {
         btn.textContent = "Simpan Sijil Bayaran"; btn.disabled = false;
         if (respons && respons.status) {
             Swal.fire('Berjaya', respons.message + `\nBaki Kuantiti Terkini: ${respons.data.baki_terkini}`, respons.data.amaran_dihantar ? 'warning' : 'success')
-            .then(() => {
-                borangBayaran.reset();
-                document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi');
-                document.getElementById('paparan-net-payable').textContent = "RM 0.00";
-            });
+            .then(() => { borangBayaran.reset(); document.getElementById('kawasan-kerja-bayaran').classList.add('skrin-sembunyi'); document.getElementById('paparan-net-payable').textContent = "RM 0.00"; });
         } else {
             Swal.fire('Ralat', respons.message, 'error');
         }
     });
 }
 
+// ==========================================
+// 12. MOHON VO
+// ==========================================
 function kiraJumlahVO() {
     let totalNilai = 0;
     document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
@@ -689,8 +831,8 @@ if (btnTarikVo) {
                     tr.className = 'baris-pkt-vo';
                     tr.innerHTML = `
                         <td><input type="text" class="vo-pkt-kod" value="${pkt.kod_pkt}" readonly style="background:#e9ecef; border:none; font-weight:bold; width:100%;"></td>
-                        <td><input type="number" step="0.01" class="vo-pkt-harga" value="${pkt.harga_seunit}" style="width:100%;" placeholder="Harga/unit"></td>
-                        <td><input type="number" step="0.01" class="vo-pkt-kuantiti" value="0" min="0" style="width:100%;" placeholder="Kuantiti tambahan"></td>
+                        <td><input type="number" step="0.01" class="vo-pkt-harga" value="${pkt.harga_seunit}" style="width:100%;"></td>
+                        <td><input type="number" step="0.01" class="vo-pkt-kuantiti" value="0" min="0" style="width:100%;"></td>
                         <td><input type="number" step="0.01" class="vo-pkt-nilai" value="0.00" readonly style="background:#e9ecef; border:none; font-weight:bold; color:var(--primary-color); width:100%;"></td>
                     `;
                     tbody.appendChild(tr);
@@ -698,7 +840,6 @@ if (btnTarikVo) {
                     tr.querySelector('.vo-pkt-kuantiti').addEventListener('input', kiraJumlahVO);
                 });
                 kiraJumlahVO();
-
             } else {
                 kawasanPktVO.classList.add('skrin-sembunyi');
                 kotakVoKuantiti.classList.remove('skrin-sembunyi');
@@ -708,7 +849,6 @@ if (btnTarikVo) {
             }
 
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data ditarik!', showConfirmButton: false, timer: 1500});
-
         } else {
             Swal.fire('Gagal', respons.message, 'error');
         }
@@ -721,16 +861,10 @@ if (voJenis) {
         const val = e.target.value;
         const kMula = document.getElementById('kotak-vo-mula');
         const kTamat = document.getElementById('kotak-vo-tamat');
-
         if (val === 'Tambahan Kuantiti') {
-            kMula.classList.add('skrin-sembunyi');
-            kTamat.classList.add('skrin-sembunyi');
-        } else if (val === 'Sambung Masa (EOT)') {
-            kMula.classList.remove('skrin-sembunyi');
-            kTamat.classList.remove('skrin-sembunyi');
+            kMula.classList.add('skrin-sembunyi'); kTamat.classList.add('skrin-sembunyi');
         } else {
-            kMula.classList.remove('skrin-sembunyi');
-            kTamat.classList.remove('skrin-sembunyi');
+            kMula.classList.remove('skrin-sembunyi'); kTamat.classList.remove('skrin-sembunyi');
         }
     });
 }
@@ -740,9 +874,7 @@ if (borangMohonVO) {
     borangMohonVO.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!document.getElementById('vo-no-spk').value) return Swal.fire('Ralat', 'Sila tarik data SPK dahulu.', 'error');
-
-        const btn = e.target.querySelector('button');
-        btn.textContent = "Sedang Menghantar..."; btn.disabled = true;
+        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Menghantar..."; btn.disabled = true;
 
         let kuantitiHantar = 0, nilaiHantar = 0;
         document.querySelectorAll('.baris-pkt-vo').forEach(tr => {
@@ -768,7 +900,6 @@ if (borangMohonVO) {
             tarikh_tamat_baru: document.getElementById('vo-tamat-baru').value,
             dikunci_oleh: JSON.parse(sessionStorage.getItem('spk_user')).username
         });
-
         btn.textContent = "Hantar Permohonan VO"; btn.disabled = false;
 
         if (respons && respons.status) {
@@ -789,6 +920,9 @@ if (borangMohonVO) {
     });
 }
 
+// ==========================================
+// 13. PENAMATAN SPK
+// ==========================================
 const btnTarikTamat = document.getElementById('btn-tarik-tamat');
 if (btnTarikTamat) {
     btnTarikTamat.addEventListener('click', async () => {
@@ -822,8 +956,7 @@ if (borangMohonTamat) {
     borangMohonTamat.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!document.getElementById('tamat-no-spk').value) return Swal.fire('Ralat', 'Sila tarik data SPK dahulu.', 'error');
-        const btn = e.target.querySelector('button');
-        btn.textContent = "Sedang Memohon..."; btn.disabled = true;
+        const btn = e.target.querySelector('button'); btn.textContent = "Sedang Memohon..."; btn.disabled = true;
         const respons = await panggilAPI('mohonTamat', {
             no_spk: document.getElementById('tamat-no-spk').value,
             no_po: document.getElementById('tamat-no-po').value,
@@ -841,6 +974,9 @@ if (borangMohonTamat) {
     });
 }
 
+// ==========================================
+// 14. NOTIFIKASI & KELULUSAN
+// ==========================================
 async function semakNotifikasi(user) {
     if (!user) return;
     const role = user.role.toUpperCase();
@@ -914,10 +1050,7 @@ window.prosesTindakan = function(noSpk, jenisModul, tindakan, catatan = "") {
 async function laksanakanTindakan(noSpk, jenisModul, tindakan, catatan) {
     const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
     const apiName = jenisModul === 'VO' ? 'updateVO' : 'prosesTamat';
-    const respons = await panggilAPI(apiName, {
-        no_spk: noSpk, role: userSesi.role.toUpperCase(),
-        tindakan: tindakan, catatan: catatan
-    });
+    const respons = await panggilAPI(apiName, { no_spk: noSpk, role: userSesi.role.toUpperCase(), tindakan: tindakan, catatan: catatan });
     if (respons && respons.status) {
         Swal.fire('Selesai', respons.message, 'success');
         document.getElementById('modal-tolak').classList.add('skrin-sembunyi');
@@ -943,6 +1076,9 @@ document.getElementById('btn-sahkan-tolak')?.addEventListener('click', () => {
     window.prosesTindakan(document.getElementById('tolak-spk-no').value, jenis, 'TOLAK', catatan);
 });
 
+// ==========================================
+// 15. PROFIL [V4.0: +password policy validation]
+// ==========================================
 const borangProfil = document.getElementById('borang-profil');
 if (borangProfil) {
     borangProfil.addEventListener('submit', async (e) => {
@@ -953,9 +1089,11 @@ if (borangProfil) {
             if (!oldPassword || oldPassword.trim() === "") {
                 return Swal.fire('Maklumat Tidak Lengkap', 'Sila masukkan Kata Laluan Semasa (Lama) untuk menukar kata laluan.', 'warning');
             }
+            if (!validatePasswordPolicy(newPassword)) {
+                return Swal.fire('Kata Laluan Tidak Sah', 'Kata laluan mesti sekurang-kurangnya 6 aksara dan mengandungi huruf besar, huruf kecil, nombor, dan simbol.', 'warning');
+            }
         }
-        const btn = e.target.querySelector('button');
-        btn.textContent = "Menyimpan..."; btn.disabled = true;
+        const btn = e.target.querySelector('button'); btn.textContent = "Menyimpan..."; btn.disabled = true;
         const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
         const respons = await panggilAPI('updateProfile', {
             id_user: userSesi.id_user,
@@ -983,15 +1121,36 @@ if (borangProfil) {
     });
 }
 
+// ==========================================
+// 16. PENGURUSAN AKAUN ADMIN [V4.0: 3 Tab]
+// ==========================================
+window.tunjukTabAkaun = function(tab) {
+    document.getElementById('seksyen-pending-akaun').classList.add('skrin-sembunyi');
+    document.getElementById('seksyen-aktif-akaun').classList.add('skrin-sembunyi');
+    document.getElementById('seksyen-disabled-akaun').classList.add('skrin-sembunyi');
+
+    document.getElementById('tab-pending').className = 'btn-sekunder';
+    document.getElementById('tab-aktif').className = 'btn-sekunder';
+    document.getElementById('tab-disabled').className = 'btn-sekunder';
+
+    document.getElementById(`seksyen-${tab}-akaun`).classList.remove('skrin-sembunyi');
+    document.getElementById(`tab-${tab}`).className = 'btn-utama';
+
+    if (tab === 'aktif' || tab === 'disabled') muatSenaraiPengguna();
+};
+
+document.getElementById('tab-pending').style.cssText = 'width:auto; padding:10px 20px;';
+document.getElementById('tab-aktif').style.cssText = 'width:auto; padding:10px 20px;';
+document.getElementById('tab-disabled').style.cssText = 'width:auto; padding:10px 20px;';
+
 async function semakBadgePendingAkaun(user) {
     if (!user || user.role.toUpperCase() !== 'ADMIN') return;
     const respons = await panggilAPI('getSenaraiPending', { role: user.role.toUpperCase() });
     if (respons && respons.status) {
         const badge = document.getElementById('badge-pending-akaun');
-        if (badge) {
-            badge.textContent = respons.jumlah;
-            badge.classList.toggle('sembunyi', respons.jumlah === 0);
-        }
+        const badgeTab = document.getElementById('badge-pending-akaun-tab');
+        if (badge) { badge.textContent = respons.jumlah; badge.classList.toggle('sembunyi', respons.jumlah === 0); }
+        if (badgeTab) badgeTab.textContent = respons.jumlah;
     }
 }
 
@@ -1003,13 +1162,13 @@ async function muatSenaraiPendingAkaun() {
     container.innerHTML = `<p style="text-align:center; color:var(--text-pudar);"><i class="fas fa-spinner fa-spin"></i> Sedang memuat turun data...</p>`;
     const respons = await panggilAPI('getSenaraiPending', { role: userSesi.role.toUpperCase() });
     if (respons && respons.status) {
+        const badge = document.getElementById('badge-pending-akaun');
+        const badgeTab = document.getElementById('badge-pending-akaun-tab');
+        if (badge) { badge.textContent = respons.jumlah; badge.classList.toggle('sembunyi', respons.jumlah === 0); }
+        if (badgeTab) badgeTab.textContent = respons.jumlah;
+
         if (respons.data.length === 0) {
-            container.innerHTML = `
-                <div style="text-align:center; padding: 40px; color:var(--text-pudar);">
-                    <i class="fas fa-check-circle" style="font-size:50px; color:var(--success); margin-bottom:15px;"></i>
-                    <h3 style="margin-bottom:8px;">Tiada Permohonan Baharu</h3>
-                    <p>Semua permohonan akaun telah diproses.</p>
-                </div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-pudar);"><i class="fas fa-check-circle" style="font-size:50px; color:var(--success); margin-bottom:15px;"></i><h3 style="margin-bottom:8px;">Tiada Permohonan Baharu</h3><p>Semua permohonan akaun telah diproses.</p></div>`;
         } else {
             container.innerHTML = respons.data.map(user => `
                 <div class="kad-vo" style="border-left-color: #8b5cf6;">
@@ -1022,22 +1181,72 @@ async function muatSenaraiPendingAkaun() {
                         <p><strong>Tarikh Mohon:</strong> ${new Date(user.tarikh_daftar).toLocaleDateString('ms-MY', {day:'numeric', month:'long', year:'numeric'})}</p>
                     </div>
                     <div class="kad-actions">
-                        <button class="btn-hijau" onclick="window.prosesAkaun('${user.id_user}', '${user.username}', 'AKTIF')">
-                            <i class="fas fa-check"></i> Aktifkan
-                        </button>
-                        <button class="btn-danger" onclick="window.bukaTolakAkaun('${user.id_user}', '${user.username}')">
-                            <i class="fas fa-times"></i> Tolak
-                        </button>
+                        <button class="btn-hijau" onclick="window.prosesAkaun('${user.id_user}', '${user.username}', 'AKTIF')"><i class="fas fa-check"></i> Aktifkan</button>
+                        <button class="btn-danger" onclick="window.bukaTolakAkaun('${user.id_user}', '${user.username}')"><i class="fas fa-times"></i> Tolak</button>
                     </div>
                 </div>`).join('');
         }
-        const badge = document.getElementById('badge-pending-akaun');
-        if (badge) {
-            badge.textContent = respons.jumlah;
-            badge.classList.toggle('sembunyi', respons.jumlah === 0);
-        }
     } else {
         container.innerHTML = `<p style="text-align:center; color:var(--danger);">Gagal memuatkan data. Sila cuba lagi.</p>`;
+    }
+}
+
+async function muatSenaraiPengguna() {
+    const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
+    if (!userSesi || userSesi.role.toUpperCase() !== 'ADMIN') return;
+
+    const cAktif = document.getElementById('senarai-aktif-container');
+    const cDisabled = document.getElementById('senarai-disabled-container');
+    if (cAktif) cAktif.innerHTML = `<p style="text-align:center; color:var(--text-pudar);"><i class="fas fa-spinner fa-spin"></i> Sedang memuat turun...</p>`;
+    if (cDisabled) cDisabled.innerHTML = `<p style="text-align:center; color:var(--text-pudar);"><i class="fas fa-spinner fa-spin"></i> Sedang memuat turun...</p>`;
+
+    const respons = await panggilAPI('getSenaraiPengguna', { role: userSesi.role.toUpperCase() });
+    if (!respons || !respons.status) {
+        if (cAktif) cAktif.innerHTML = `<p style="text-align:center; color:var(--danger);">Gagal memuatkan data.</p>`;
+        if (cDisabled) cDisabled.innerHTML = `<p style="text-align:center; color:var(--danger);">Gagal memuatkan data.</p>`;
+        return;
+    }
+
+    if (cAktif) {
+        if (!respons.aktif || respons.aktif.length === 0) {
+            cAktif.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-pudar);"><i class="fas fa-users" style="font-size:40px; margin-bottom:15px;"></i><p>Tiada akaun aktif.</p></div>`;
+        } else {
+            cAktif.innerHTML = respons.aktif.map(u => `
+                <div class="kad-vo" style="border-left-color:#10b981;">
+                    <div class="kad-header">
+                        <span class="kad-spk"><i class="fas fa-user-check"></i> ${u.username}</span>
+                        <span class="badge-status badge-lulus">${u.role}</span>
+                    </div>
+                    <div class="kad-body" style="margin-bottom:15px;">
+                        <p><strong>E-mel:</strong> ${u.email}</p>
+                        <p><strong>Status:</strong> ${u.status}</p>
+                    </div>
+                    <div class="kad-actions">
+                        <button class="btn-danger" onclick="window.prosesDisable('${u.id_user}', '${u.username}')"><i class="fas fa-user-slash"></i> Nyahaktifkan</button>
+                    </div>
+                </div>`).join('');
+        }
+    }
+
+    if (cDisabled) {
+        if (!respons.disabled || respons.disabled.length === 0) {
+            cDisabled.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-pudar);"><i class="fas fa-user-slash" style="font-size:40px; margin-bottom:15px;"></i><p>Tiada akaun dinyahaktifkan.</p></div>`;
+        } else {
+            cDisabled.innerHTML = respons.disabled.map(u => `
+                <div class="kad-vo" style="border-left-color:#475569;">
+                    <div class="kad-header">
+                        <span class="kad-spk"><i class="fas fa-user-slash"></i> ${u.username}</span>
+                        <span class="badge-status badge-tamat">${u.role}</span>
+                    </div>
+                    <div class="kad-body" style="margin-bottom:15px;">
+                        <p><strong>E-mel:</strong> ${u.email}</p>
+                        <p><strong>Status:</strong> DINYAHAKTIFKAN</p>
+                    </div>
+                    <div class="kad-actions">
+                        <button class="btn-hijau" onclick="window.prosesEnable('${u.id_user}', '${u.username}')"><i class="fas fa-user-check"></i> Aktifkan Semula</button>
+                    </div>
+                </div>`).join('');
+        }
     }
 }
 
@@ -1050,14 +1259,46 @@ window.prosesAkaun = function(idUser, username, tindakan) {
         confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Aktifkan', cancelButtonText: 'Batal'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            const respons = await panggilAPI('aktifkanAkaun', {
-                id_user: idUser, tindakan: 'AKTIF',
-                role: userSesi.role.toUpperCase(),
-                admin_username: userSesi.username,
-                admin_email: userSesi.email
-            });
+            const respons = await panggilAPI('aktifkanAkaun', { id_user: idUser, tindakan: 'AKTIF', role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
             if (respons && respons.status) {
                 Swal.fire('Berjaya!', respons.message, 'success').then(() => muatSenaraiPendingAkaun());
+            } else {
+                Swal.fire('Ralat', respons.message, 'error');
+            }
+        }
+    });
+};
+
+window.prosesDisable = function(idUser, username) {
+    const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
+    Swal.fire({
+        title: `Nyahaktifkan akaun "${username}"?`,
+        text: `Pengguna tidak akan dapat log masuk sehingga akaun diaktifkan semula.`,
+        icon: 'warning', showCancelButton: true,
+        confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Nyahaktifkan', cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const respons = await panggilAPI('disableAkaun', { id_user: idUser, role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
+            if (respons && respons.status) {
+                Swal.fire('Selesai', respons.message, 'success').then(() => muatSenaraiPengguna());
+            } else {
+                Swal.fire('Ralat', respons.message, 'error');
+            }
+        }
+    });
+};
+
+window.prosesEnable = function(idUser, username) {
+    const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
+    Swal.fire({
+        title: `Aktifkan semula akaun "${username}"?`,
+        icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#10b981', confirmButtonText: 'Ya, Aktifkan Semula', cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const respons = await panggilAPI('enableAkaun', { id_user: idUser, role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
+            if (respons && respons.status) {
+                Swal.fire('Selesai', respons.message, 'success').then(() => muatSenaraiPengguna());
             } else {
                 Swal.fire('Ralat', respons.message, 'error');
             }
@@ -1080,12 +1321,7 @@ document.getElementById('btn-sahkan-tolak-akaun')?.addEventListener('click', asy
     const idUser = document.getElementById('tolak-akaun-id').value;
     const sebab = document.getElementById('tolak-akaun-sebab').value.trim();
     const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
-    const respons = await panggilAPI('aktifkanAkaun', {
-        id_user: idUser, tindakan: 'TOLAK', sebab: sebab,
-        role: userSesi.role.toUpperCase(),
-        admin_username: userSesi.username,
-        admin_email: userSesi.email
-    });
+    const respons = await panggilAPI('aktifkanAkaun', { id_user: idUser, tindakan: 'TOLAK', sebab: sebab, role: userSesi.role.toUpperCase(), admin_username: userSesi.username, admin_email: userSesi.email });
     document.getElementById('modal-tolak-akaun').classList.add('skrin-sembunyi');
     if (respons && respons.status) {
         Swal.fire('Selesai', respons.message, 'success').then(() => muatSenaraiPendingAkaun());
