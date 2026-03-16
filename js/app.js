@@ -212,10 +212,6 @@ if (borangLogin) {
             }
             borangLogin.reset();
             binaDashboard(respons.data);
-            if (respons.data.requirePasswordChange) {
-                Swal.fire({ title: 'Perhatian Keselamatan!', text: 'Sila tukar kata laluan sementara anda di menu Profil untuk mengelakkan akaun anda diceroboh.', icon: 'warning' })
-                .then(() => bukaModul('profil'));
-            }
         } else {
             Swal.fire('Gagal', respons ? respons.message : "Ralat pelayan.", 'error');
         }
