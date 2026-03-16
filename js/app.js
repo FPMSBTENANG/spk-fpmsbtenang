@@ -1,60 +1,5 @@
 // Fail: js/app.js
-// Versi: V4.1 — Cyber Noir
-// Base: V4.0 (stabil) — semua logik asal kekal
-// Tambahan V4.1: initParticleCanvas() + warna chart
-
-// ==========================================
-// [V4.1 BAHARU] PARTICLE CANVAS BACKGROUND
-// ==========================================
-function initParticleCanvas() {
-    const canvas = document.getElementById('particle-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    function resize() {
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    const dots = Array.from({ length: 85 }, () => ({
-        x:  Math.random() * canvas.width,
-        y:  Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r:  Math.random() * 1.4 + 0.4
-    }));
-
-    let raf;
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        dots.forEach(d => {
-            d.x += d.vx; d.y += d.vy;
-            if (d.x < 0 || d.x > canvas.width)  d.vx *= -1;
-            if (d.y < 0 || d.y > canvas.height)  d.vy *= -1;
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,245,255,0.28)';
-            ctx.fill();
-        });
-        for (let i = 0; i < dots.length; i++) {
-            for (let j = i + 1; j < dots.length; j++) {
-                const dist = Math.hypot(dots[i].x - dots[j].x, dots[i].y - dots[j].y);
-                if (dist < 110) {
-                    ctx.beginPath();
-                    ctx.moveTo(dots[i].x, dots[i].y);
-                    ctx.lineTo(dots[j].x, dots[j].y);
-                    ctx.strokeStyle = `rgba(0,245,255,${0.07 * (1 - dist / 110)})`;
-                    ctx.lineWidth = 0.5;
-                    ctx.stroke();
-                }
-            }
-        }
-        raf = requestAnimationFrame(draw);
-    }
-    draw();
-}
+// Versi: V4.0
 
 // ==========================================
 // 1. PEMBOLEH UBAH DOM
@@ -88,7 +33,6 @@ setInterval(kemaskiniJam, 1000);
 kemaskiniJam();
 
 document.addEventListener('DOMContentLoaded', () => {
-    initParticleCanvas();
     tambahBarisPkt(false);
     const sesiUser = sessionStorage.getItem('spk_user');
     if (sesiUser) {
@@ -440,9 +384,7 @@ async function tarikDataDashboard() {
                 datasets: [{
                     label: 'Statistik Data',
                     data: [respons.data.total_spk, respons.data.total_tamat || 0, respons.data.vo_lulus, respons.data.vo_pending],
-                    backgroundColor: ['rgba(0,245,255,0.2)', 'rgba(167,139,250,0.2)', 'rgba(52,211,153,0.2)', 'rgba(251,191,36,0.2)'],
-                    borderColor: ['#00F5FF', '#A78BFA', '#34D399', '#FBBF24'],
-                    borderWidth: 1.5,
+                    backgroundColor: ['#3b82f6', '#475569', '#10b981', '#f59e0b'],
                     borderRadius: 8
                 }]
             },
