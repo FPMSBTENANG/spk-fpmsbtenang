@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyw0clbAErEKjhGtaQSFFwvmXVGwd10QpdZiFAnsWIxHntc3nEo_oEpQzHU460CfNg0/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzBjBqZPDD7UEC9B5FA7aKqbRRIr1O6WzQWUaBOyY0t-FmREbqo9crKxRXM82RchHEG/exec";
 
 async function panggilAPI(action, data = {}) {
 
