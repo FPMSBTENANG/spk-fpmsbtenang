@@ -1,6 +1,3 @@
-// Fail: js/app.js
-// Versi: V4.0
-
 // ==========================================
 // 1. PEMBOLEH UBAH DOM
 // ==========================================
@@ -17,6 +14,7 @@ const paparanRole = document.getElementById('paparan-role');
 const badgeNotifikasi = document.getElementById('badge-notifikasi');
 let grafDashboard = null;
 let resetEmail = "";
+let modEditSPK = false;
 
 // ==========================================
 // 2. JAM REAL-TIME & AWALAN
@@ -424,6 +422,9 @@ if (btnCarian) {
             `;
 
             const btnBukaAmanah = document.getElementById('btn-buka-amanah');
+            const btnEditSpk = document.getElementById('btn-edit-spk');
+            const userSesiCarian = JSON.parse(sessionStorage.getItem('spk_user'));
+
             if (d.info_spk.status === 'ACTIVE') {
                 btnBukaAmanah.classList.remove('skrin-sembunyi');
                 btnBukaAmanah.onclick = () => {
@@ -432,8 +433,16 @@ if (btnCarian) {
                     document.getElementById('amanah-cara-baru').value = d.info_spk.cara_bayaran === "Potong Sijil Bayaran" ? "Bank Draf" : (d.info_spk.cara_bayaran || "Bank Draf");
                     document.getElementById('modal-amanah').classList.remove('skrin-sembunyi');
                 };
+                if (btnEditSpk) {
+                    const bolehEdit = ['KERANI', 'ADMIN'].includes(userSesiCarian.role.toUpperCase());
+                    btnEditSpk.classList.toggle('skrin-sembunyi', !bolehEdit);
+                    if (bolehEdit) {
+                        btnEditSpk.onclick = () => masukModEdit({ ...d.info_spk, detail_pkt: d.detail_pkt });
+                    }
+                }
             } else {
                 btnBukaAmanah.classList.add('skrin-sembunyi');
+                if (btnEditSpk) btnEditSpk.classList.add('skrin-sembunyi');
             }
 
             const gaugeWrapper = document.getElementById('paparan-gauge');
@@ -525,9 +534,18 @@ const spkAmanah = document.getElementById('spk-amanah');
 
 if (spkAmanah) {
     spkAmanah.addEventListener('change', (e) => {
-        const show = e.target.value === 'YA';
-        document.getElementById('kotak-nilai-amanah').classList.toggle('skrin-sembunyi', !show);
-        document.getElementById('kotak-cara-bayaran').classList.toggle('skrin-sembunyi', !show);
+        const val = e.target.value;
+        const showKotak = val === 'YA' || val === 'SUDAH_DIPOTONG';
+        document.getElementById('kotak-nilai-amanah').classList.toggle('skrin-sembunyi', !showKotak);
+        document.getElementById('kotak-cara-bayaran').classList.toggle('skrin-sembunyi', !showKotak);
+    });
+}
+
+const spkTahanan = document.getElementById('spk-tahanan');
+if (spkTahanan) {
+    spkTahanan.addEventListener('change', (e) => {
+        const kotakWT = document.getElementById('kotak-nilai-tahanan');
+        if (kotakWT) kotakWT.classList.toggle('skrin-sembunyi', e.target.value !== 'SUDAH_DIPOTONG');
     });
 }
 
@@ -614,7 +632,8 @@ if (borangDaftarSPK) {
         const btn = e.target.querySelector('button');
         btn.textContent = "Menyimpan..."; btn.disabled = true;
 
-        const respons = await panggilAPI('createSPK', {
+        const userSesi = JSON.parse(sessionStorage.getItem('spk_user'));
+        const spkPayload = {
             no_spk: document.getElementById('spk-no').value,
             no_po: document.getElementById('spk-po').value,
             nama_kontrak: document.getElementById('spk-nama').value,
@@ -635,20 +654,130 @@ if (borangDaftarSPK) {
             frequency_month: document.getElementById('spk-freq').value,
             tarikh_mula: tarikhMula,
             tarikh_tamat: tarikhTamat,
-            created_by: JSON.parse(sessionStorage.getItem('spk_user')).email
-        });
-        btn.textContent = "Daftar SPK Induk"; btn.disabled = false;
+            nilai_tahanan: document.getElementById('spk-nilai-tahanan')?.value || ""
+        };
+
+        let respons;
+        if (modEditSPK) {
+            spkPayload.no_spk_asal = document.getElementById('spk-no-asal').value;
+            spkPayload.updated_by = userSesi.email;
+            spkPayload.role = userSesi.role.toUpperCase();
+            respons = await panggilAPI('updateSPK', spkPayload);
+        } else {
+            spkPayload.created_by = userSesi.email;
+            respons = await panggilAPI('createSPK', spkPayload);
+        }
+
+        btn.textContent = modEditSPK ? "Kemaskini SPK" : "Daftar SPK Induk";
+        btn.disabled = false;
         if (respons && respons.status) {
-            Swal.fire('Pendaftaran SPK Berjaya', respons.message, 'success').then(() => {
+            const tajuk = modEditSPK ? 'SPK Berjaya Dikemaskini' : 'Pendaftaran SPK Berjaya';
+            Swal.fire(tajuk, respons.message, 'success').then(() => {
                 borangDaftarSPK.reset();
                 containerBarisPkt.innerHTML = '';
                 tambahBarisPkt(false);
+                resetModEdit();
                 bukaModul('utama');
             });
         } else {
             Swal.fire('Ralat', respons.message, 'error');
         }
     });
+}
+
+function masukModEdit(data) {
+    modEditSPK = true;
+    document.getElementById('tajuk-borang-spk').textContent = `Kemaskini SPK — ${data.no_spk}`;
+    document.getElementById('subtajuk-borang-spk').textContent = 'Kemaskini maklumat SPK yang dipilih. No SPK dan No PO tidak boleh diubah.';
+    document.getElementById('btn-submit-spk').textContent = 'Kemaskini SPK';
+    document.getElementById('spk-no-asal').value = data.no_spk;
+
+    const elNo = document.getElementById('spk-no');
+    const elPo = document.getElementById('spk-po');
+    elNo.value = data.no_spk; elNo.readOnly = true; elNo.style.background = '#e9ecef';
+    elPo.value = data.no_po; elPo.readOnly = true; elPo.style.background = '#e9ecef';
+
+    document.getElementById('spk-nama').value = data.nama_kontrak || '';
+    document.getElementById('spk-alamat').value = data.alamat_kontrak || '';
+    document.getElementById('spk-vendor').value = data.vendor || '';
+    document.getElementById('spk-blok').value = data.blok || '';
+    document.getElementById('spk-jenis').value = data.jenis_kerja || '';
+    document.getElementById('spk-mode').value = data.mode || 'KUANTITI';
+    document.getElementById('spk-unit').value = data.unit || '';
+    document.getElementById('spk-insuran').value = data.insuran || 'BELUM';
+    document.getElementById('spk-freq').value = data.frequency_month || '';
+
+    if (data.tarikh_mula) {
+        try { document.getElementById('spk-mula').value = new Date(data.tarikh_mula).toISOString().split('T')[0]; } catch(e) {}
+    }
+    if (data.tarikh_tamat) {
+        try { document.getElementById('spk-tamat').value = new Date(data.tarikh_tamat).toISOString().split('T')[0]; } catch(e) {}
+    }
+
+    const adaAmanah = data.ada_amanah || 'YA';
+    document.getElementById('spk-amanah').value = adaAmanah;
+    const showWA = adaAmanah === 'YA' || adaAmanah === 'SUDAH_DIPOTONG';
+    document.getElementById('kotak-nilai-amanah').classList.toggle('skrin-sembunyi', !showWA);
+    document.getElementById('kotak-cara-bayaran').classList.toggle('skrin-sembunyi', !showWA);
+    if (showWA) {
+        document.getElementById('spk-nilai-amanah').value = data.nilai_amanah || '';
+        if (data.cara_bayaran) document.getElementById('spk-cara-bayaran').value = data.cara_bayaran;
+    }
+
+    const adaTahanan = data.ada_tahanan || 'TIDAK';
+    document.getElementById('spk-tahanan').value = adaTahanan;
+    const kotakWT = document.getElementById('kotak-nilai-tahanan');
+    if (kotakWT) {
+        kotakWT.classList.toggle('skrin-sembunyi', adaTahanan !== 'SUDAH_DIPOTONG');
+        if (adaTahanan === 'SUDAH_DIPOTONG') {
+            document.getElementById('spk-nilai-tahanan').value = data.nilai_tahanan || '';
+        }
+    }
+
+    containerBarisPkt.innerHTML = '';
+    if (data.detail_pkt && data.detail_pkt.length > 1) {
+        document.getElementById('spk-jenis-pkt').value = 'PELBAGAI';
+        btnTambahPkt.classList.remove('skrin-sembunyi');
+        data.detail_pkt.forEach((p, idx) => {
+            tambahBarisPkt(idx > 0);
+            const baris = containerBarisPkt.querySelectorAll('.baris-pkt-item');
+            const row = baris[baris.length - 1];
+            row.querySelector('.input-pkt-no').value = p.kod_pkt;
+            row.querySelector('.input-pkt-kuantiti').value = p.kuantiti;
+            row.querySelector('.input-pkt-harga').value = p.harga_seunit;
+            row.querySelector('.input-pkt-jumlah').value = p.jumlah_rm;
+        });
+    } else {
+        document.getElementById('spk-jenis-pkt').value = 'TUNGGAL';
+        btnTambahPkt.classList.add('skrin-sembunyi');
+        tambahBarisPkt(false);
+        if (data.detail_pkt && data.detail_pkt.length === 1) {
+            const row = containerBarisPkt.querySelector('.baris-pkt-item');
+            row.querySelector('.input-pkt-no').value = data.detail_pkt[0].kod_pkt;
+            row.querySelector('.input-pkt-kuantiti').value = data.detail_pkt[0].kuantiti;
+            row.querySelector('.input-pkt-harga').value = data.detail_pkt[0].harga_seunit;
+            row.querySelector('.input-pkt-jumlah').value = data.detail_pkt[0].jumlah_rm;
+        }
+    }
+    kiraTotalSPK();
+    bukaModul('daftar-spk');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetModEdit() {
+    modEditSPK = false;
+    document.getElementById('tajuk-borang-spk').textContent = 'Daftar SPK Baharu';
+    document.getElementById('subtajuk-borang-spk').textContent = 'Sila lengkapkan maklumat SPK Induk di bawah.';
+    document.getElementById('btn-submit-spk').textContent = 'Daftar SPK Induk';
+    document.getElementById('spk-no-asal').value = '';
+    const elNo = document.getElementById('spk-no');
+    const elPo = document.getElementById('spk-po');
+    elNo.readOnly = false; elNo.style.background = '';
+    elPo.readOnly = false; elPo.style.background = '';
+    const kotakWT = document.getElementById('kotak-nilai-tahanan');
+    if (kotakWT) kotakWT.classList.add('skrin-sembunyi');
+    document.getElementById('kotak-nilai-amanah').classList.add('skrin-sembunyi');
+    document.getElementById('kotak-cara-bayaran').classList.add('skrin-sembunyi');
 }
 
 // ==========================================
@@ -730,6 +859,20 @@ if (btnTarikBayaran) {
             } else {
                 hintWa.textContent = `(SPK ini menggunakan ${d.cara_bayaran || 'Tiada'}, abaikan jika tiada potongan)`;
                 hintWa.style.color = "var(--warning)";
+            }
+
+            const hintWt = document.getElementById('hint-wt');
+            if (hintWt) {
+                const statusWT = d.ada_tahanan || 'TIDAK';
+                if (statusWT === 'SUDAH_DIPOTONG') {
+                    hintWt.textContent = `(WT terkumpul pre-sistem: RM${parseFloat(d.nilai_tahanan || 0).toLocaleString('ms-MY', {minimumFractionDigits: 2})} — potongan sijil ini adalah tambahan)`;
+                    hintWt.style.color = "var(--warning)";
+                } else if (statusWT === 'TIDAK') {
+                    hintWt.textContent = "(SPK ini tiada wang tahanan)";
+                    hintWt.style.color = "var(--text-pudar)";
+                } else {
+                    hintWt.textContent = "";
+                }
             }
             kiraNetPayable();
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data SPK ditarik!', showConfirmButton: false, timer: 1500});
@@ -932,12 +1075,32 @@ if (btnTarikTamat) {
             document.getElementById('tamat-no-spk').value = d.info_spk.no_spk;
             document.getElementById('tamat-no-po').value = d.info_spk.no_po;
             let totalAmanahPotong = 0, totalTahananPotong = 0;
-            if (d.info_spk.cara_bayaran === "Potong Sijil Bayaran") {
+            const statusWA = d.info_spk.ada_amanah || 'YA';
+            const statusWT = d.info_spk.ada_tahanan || 'TIDAK';
+
+            if (statusWA === 'TIDAK') {
+                totalAmanahPotong = 0;
+            } else if (statusWA === 'SUDAH_DIPOTONG') {
+                const nilaiPreSistem = parseFloat(d.info_spk.nilai_amanah) || 0;
+                let dariSijil = 0;
+                d.bayaran.forEach(b => dariSijil += (parseFloat(b.wang_amanah) || 0));
+                totalAmanahPotong = nilaiPreSistem + dariSijil;
+            } else if (d.info_spk.cara_bayaran === "Potong Sijil Bayaran") {
                 d.bayaran.forEach(b => totalAmanahPotong += (parseFloat(b.wang_amanah) || 0));
             } else {
                 totalAmanahPotong = parseFloat(d.info_spk.nilai_amanah) || 0;
             }
-            d.bayaran.forEach(b => totalTahananPotong += (parseFloat(b.wang_tahanan) || 0));
+
+            if (statusWT === 'TIDAK') {
+                totalTahananPotong = 0;
+            } else if (statusWT === 'SUDAH_DIPOTONG') {
+                const nilaiWtPreSistem = parseFloat(d.info_spk.nilai_tahanan) || 0;
+                let dariSijilWT = 0;
+                d.bayaran.forEach(b => dariSijilWT += (parseFloat(b.wang_tahanan) || 0));
+                totalTahananPotong = nilaiWtPreSistem + dariSijilWT;
+            } else {
+                d.bayaran.forEach(b => totalTahananPotong += (parseFloat(b.wang_tahanan) || 0));
+            }
             document.getElementById('tamat-wang-tahanan').value = totalTahananPotong.toFixed(2);
             document.getElementById('tamat-wang-amanah').value = totalAmanahPotong.toFixed(2);
             Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Data Penamatan ditarik!', showConfirmButton: false, timer: 1500});
